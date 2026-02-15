@@ -4,12 +4,12 @@ import { Controller, useForm } from 'react-hook-form';
 import {
 	Image,
 	ScrollView,
-	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native';
 import PhoneInput from 'react-native-phone-number-input';
+import TextComponent from '../TextComponent';
 
 const BasicInfoTab = () => {
 	const { control, handleSubmit, watch } = useForm({
@@ -40,12 +40,12 @@ const BasicInfoTab = () => {
 		<ScrollView
 			className="flex-1 bg-[#AFEEEE] px-4 py-6"
 			showsVerticalScrollIndicator={false}>
-			<Text className="text-lg font-bold text-gray-900 mb-1">
+			<TextComponent className="text-lg font-bold text-gray-900 mb-1">
 				Basic Information
-			</Text>
-			<Text className="text-sm text-gray-600 mb-6">
+			</TextComponent>
+			<TextComponent className="text-sm text-gray-600 mb-6">
 				Update your personal and contact information
-			</Text>
+			</TextComponent>
 
 			{/* Photo Section */}
 			<View className="flex-row items-center mb-6">
@@ -59,7 +59,9 @@ const BasicInfoTab = () => {
 						color="black"
 						className="mr-2"
 					/>
-					<Text className="font-semibold text-gray-800">Upload Photo</Text>
+					<TextComponent className="font-semibold text-gray-800">
+						Upload Photo
+					</TextComponent>
 				</TouchableOpacity>
 			</View>
 
@@ -67,7 +69,9 @@ const BasicInfoTab = () => {
 
 			{/* First Name */}
 			<View className="mb-4">
-				<Text className="text-gray-800 font-semibold mb-2">First Name</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					First Name
+				</TextComponent>
 				<Controller
 					control={control}
 					name="firstName"
@@ -86,7 +90,9 @@ const BasicInfoTab = () => {
 
 			{/* Last Name */}
 			<View className="mb-4">
-				<Text className="text-gray-800 font-semibold mb-2">Last Name</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					Last Name
+				</TextComponent>
 				<Controller
 					control={control}
 					name="lastName"
@@ -106,8 +112,12 @@ const BasicInfoTab = () => {
 			{/* About Me */}
 			<View className="mb-4">
 				<View className="flex-row justify-between mb-2">
-					<Text className="text-gray-800 font-semibold">About Me</Text>
-					<Text className="text-gray-500 text-xs">({aboutMeLength}/500)</Text>
+					<TextComponent className="text-gray-800 font-semibold">
+						About Me
+					</TextComponent>
+					<TextComponent className="text-gray-500 text-xs">
+						({aboutMeLength}/500)
+					</TextComponent>
 				</View>
 				<Controller
 					control={control}
@@ -131,10 +141,12 @@ const BasicInfoTab = () => {
 			{/* Career Highlights */}
 			<View className="mb-4">
 				<View className="flex-row justify-between mb-2">
-					<Text className="text-gray-800 font-semibold">Career Highlights</Text>
-					<Text className="text-gray-500 text-xs">
+					<TextComponent className="text-gray-800 font-semibold">
+						Career Highlights
+					</TextComponent>
+					<TextComponent className="text-gray-500 text-xs">
 						({careerHighlightsLength}/1500)
-					</Text>
+					</TextComponent>
 				</View>
 				<Controller
 					control={control}
@@ -158,7 +170,9 @@ const BasicInfoTab = () => {
 			{/* Gender & Dress */}
 			<View className="flex-row justify-between mb-4">
 				<View className="flex-1 mr-2">
-					<Text className="text-gray-800 font-semibold mb-2">Gender</Text>
+					<TextComponent className="text-gray-800 font-semibold mb-2">
+						Gender
+					</TextComponent>
 					<Controller
 						control={control}
 						name="gender"
@@ -177,7 +191,9 @@ const BasicInfoTab = () => {
 					/>
 				</View>
 				<View className="flex-1 ml-2">
-					<Text className="text-gray-800 font-semibold mb-2">Dress</Text>
+					<TextComponent className="text-gray-800 font-semibold mb-2">
+						Dress
+					</TextComponent>
 					<Controller
 						control={control}
 						name="dress"
@@ -197,7 +213,9 @@ const BasicInfoTab = () => {
 
 			{/* Age Range */}
 			<View className="mb-4">
-				<Text className="text-gray-800 font-semibold mb-2">Age Range</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					Age Range
+				</TextComponent>
 				<Controller
 					control={control}
 					name="ageRange"
@@ -216,7 +234,9 @@ const BasicInfoTab = () => {
 
 			{/* Email */}
 			<View className="mb-4">
-				<Text className="text-gray-800 font-semibold mb-2">Email</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					Email
+				</TextComponent>
 				<Controller
 					control={control}
 					name="email"
@@ -236,7 +256,9 @@ const BasicInfoTab = () => {
 
 			{/* Phone */}
 			<View className="mb-4">
-				<Text className="text-gray-800 font-semibold mb-2">Phone</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					Phone
+				</TextComponent>
 				<Controller
 					control={control}
 					name="phoneNumber"
@@ -293,7 +315,9 @@ const BasicInfoTab = () => {
 
 			{/* Location */}
 			<View className="mb-6">
-				<Text className="text-gray-800 font-semibold mb-2">Location</Text>
+				<TextComponent className="text-gray-800 font-semibold mb-2">
+					Location
+				</TextComponent>
 				<Controller
 					control={control}
 					name="location"
@@ -315,7 +339,9 @@ const BasicInfoTab = () => {
 				<TouchableOpacity
 					className="bg-black py-4 rounded-full items-center active:opacity-80"
 					onPress={handleSubmit(onSubmit)}>
-					<Text className="text-white font-bold text-lg">Save Changes</Text>
+					<TextComponent className="text-white font-bold text-lg">
+						Save Changes
+					</TextComponent>
 				</TouchableOpacity>
 			</View>
 		</ScrollView>
