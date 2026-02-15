@@ -14,18 +14,16 @@ import PhoneInput from 'react-native-phone-number-input';
 const BasicInfoTab = () => {
 	const { control, handleSubmit, watch } = useForm({
 		defaultValues: {
-			firstName: 'Jordan',
-			lastName: 'Davis',
-			aboutMe:
-				'Passionate actor with 5+ years of experience in theater and film.',
-			careerHighlights:
-				'Award-winning performer. Featured in multiple independent films and theater productions.',
-			gender: 'Male',
-			dress: 'M',
+			firstName: '',
+			lastName: '',
+			aboutMe: '',
+			careerHighlights: '',
+			gender: '',
+			dress: '',
 			ageRange: '',
-			email: 'jordan.davis@gmail.com',
+			email: '',
 			phoneNumber: '',
-			location: 'Los Angeles, CA',
+			location: '',
 		},
 	});
 
@@ -53,9 +51,9 @@ const BasicInfoTab = () => {
 			<View className="flex-row items-center mb-6">
 				<Image
 					source={{ uri: 'https://i.pravatar.cc/150?img=32' }} // Placeholder image
-					className="w-16 h-16 rounded-full mr-4 border-2 border-white"
+					className="w-24 h-24 rounded-full mr-4 border-2 border-white"
 				/>
-				<TouchableOpacity className="bg-white flex-row items-center px-4 py-2 rounded-lg shadow-sm">
+				<TouchableOpacity className="bg-white flex-row items-center px-4 py-2 rounded-lg shadow-sm border border-gray-100">
 					<Upload
 						size={20}
 						color="black"
@@ -75,10 +73,12 @@ const BasicInfoTab = () => {
 					name="firstName"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+							className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
+							placeholder="Enter first name"
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -92,10 +92,12 @@ const BasicInfoTab = () => {
 					name="lastName"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+							className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
+							placeholder="Enter last name"
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -112,13 +114,15 @@ const BasicInfoTab = () => {
 					name="aboutMe"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm min-h-[100px]"
+							className="bg-white p-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base min-h-[120px]"
 							multiline
 							textAlignVertical="top"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
 							maxLength={500}
+							placeholder="Tell us about yourself..."
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -137,13 +141,15 @@ const BasicInfoTab = () => {
 					name="careerHighlights"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm min-h-[100px]"
+							className="bg-white p-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base min-h-[120px]"
 							multiline
 							textAlignVertical="top"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
 							maxLength={1500}
+							placeholder="Share your career highlights..."
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -157,12 +163,14 @@ const BasicInfoTab = () => {
 						control={control}
 						name="gender"
 						render={({ field: { onChange, value } }) => (
-							<View className="bg-white rounded-lg shadow-sm">
-								{/* Mock Dropdown logic for now, utilizing TextInput or simple View as placeholder for select */}
+							<View className="bg-white rounded-xl shadow-sm border border-gray-100 h-14 justify-center">
+								{/* Mock Dropdown logic for now */}
 								<TextInput
-									className="p-3 text-gray-800"
+									className="px-4 text-gray-800 text-base h-full"
 									value={value}
 									onChangeText={onChange}
+									placeholder="Select"
+									placeholderTextColor="#9ca3af"
 								/>
 							</View>
 						)}
@@ -175,10 +183,12 @@ const BasicInfoTab = () => {
 						name="dress"
 						render={({ field: { onChange, onBlur, value } }) => (
 							<TextInput
-								className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+								className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 								onBlur={onBlur}
 								onChangeText={onChange}
 								value={value}
+								placeholder="Size"
+								placeholderTextColor="#9ca3af"
 							/>
 						)}
 					/>
@@ -193,10 +203,12 @@ const BasicInfoTab = () => {
 					name="ageRange"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+							className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
+							placeholder="e.g. 20-30"
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -210,11 +222,13 @@ const BasicInfoTab = () => {
 					name="email"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+							className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
 							keyboardType="email-address"
+							placeholder="example@email.com"
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>
@@ -227,7 +241,7 @@ const BasicInfoTab = () => {
 					control={control}
 					name="phoneNumber"
 					render={({ field: { onChange, value } }) => (
-						<View className="bg-white rounded-lg shadow-sm overflow-hidden">
+						<View className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-14 justify-center">
 							<PhoneInput
 								ref={phoneInput}
 								defaultValue={value}
@@ -239,11 +253,38 @@ const BasicInfoTab = () => {
 								onChangeFormattedText={(text) => {
 									setFormattedValue(text);
 								}}
-								containerStyle={{ width: '100%', backgroundColor: 'white' }}
-								textContainerStyle={{ backgroundColor: 'white' }}
-								textInputStyle={{ color: '#1f2937', height: 50 }}
-								codeTextStyle={{ color: '#6b7280' }}
-								flagButtonStyle={{ backgroundColor: 'white' }}
+								withDarkTheme
+								containerStyle={{
+									width: '100%',
+									backgroundColor: 'white',
+									height: '100%',
+								}}
+								textContainerStyle={{
+									backgroundColor: 'white',
+									paddingVertical: 0,
+									height: '100%',
+								}}
+								textInputStyle={{
+									color: '#1f2937',
+									fontSize: 16,
+									height: '100%',
+									padding: 0,
+								}}
+								codeTextStyle={{
+									color: '#6b7280',
+									fontSize: 16,
+									height: 22,
+									lineHeight: 20,
+								}}
+								flagButtonStyle={{
+									width: 50,
+									justifyContent: 'center',
+									alignItems: 'center',
+									paddingLeft: 10,
+								}}
+								countryPickerButtonStyle={{
+									width: 50,
+								}}
 							/>
 						</View>
 					)}
@@ -258,10 +299,12 @@ const BasicInfoTab = () => {
 					name="location"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
-							className="bg-white p-3 rounded-lg text-gray-800 shadow-sm"
+							className="bg-white h-14 px-4 rounded-xl text-gray-800 shadow-sm border border-gray-100 text-base"
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
+							placeholder="City, State"
+							placeholderTextColor="#9ca3af"
 						/>
 					)}
 				/>

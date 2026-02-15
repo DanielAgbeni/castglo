@@ -1,6 +1,5 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import React from 'react';
-import { Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BasicInfoTab from '@/components/profile/BasicInfoTab';
@@ -20,53 +19,60 @@ export default function Profile() {
 				<Text className="text-xl font-bold text-gray-900">Profile Setting</Text>
 				{/* Placeholder for the icon in the top right, if needed later */}
 			</View>
-			<Tab.Navigator
-				screenOptions={{
-					tabBarScrollEnabled: true,
-					tabBarLabelStyle: {
-						fontSize: 12,
-						textTransform: 'none',
-						fontWeight: '600',
-					},
-					tabBarItemStyle: {
-						width: 'auto',
-						paddingHorizontal: 20,
-					},
-					tabBarIndicatorStyle: {
-						backgroundColor: '#00ced1', // approximate teal color for indicator
-						height: 3,
-					},
-					tabBarStyle: {
-						backgroundColor: 'white',
-						elevation: 0,
-						shadowOpacity: 0,
-						borderBottomWidth: 1,
-						borderBottomColor: '#f0f0f0',
-					},
-					tabBarActiveTintColor: 'black',
-					tabBarInactiveTintColor: 'gray',
-				}}>
-				<Tab.Screen
-					name="Basic Info"
-					component={BasicInfoTab}
-				/>
-				<Tab.Screen
-					name="Physical"
-					component={PhysicalTab}
-				/>
-				<Tab.Screen
-					name="Skills"
-					component={SkillsTab}
-				/>
-				<Tab.Screen
-					name="Education"
-					component={EducationTab}
-				/>
-				<Tab.Screen
-					name="Portfolio"
-					component={PortfolioTab}
-				/>
-			</Tab.Navigator>
+			<KeyboardAvoidingView
+				style={{ flex: 1 }}
+				behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+				keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+				<Tab.Navigator
+					screenOptions={{
+						tabBarScrollEnabled: true,
+						tabBarLabelStyle: {
+							fontSize: 14,
+							textTransform: 'none',
+							fontWeight: '600',
+							color: '#1f2937',
+						},
+						tabBarItemStyle: {
+							width: 'auto',
+							paddingHorizontal: 16,
+						},
+						tabBarIndicatorStyle: {
+							backgroundColor: '#AFEEEE',
+							height: 3,
+							borderRadius: 3,
+						},
+						tabBarStyle: {
+							backgroundColor: 'white',
+							elevation: 0,
+							shadowOpacity: 0,
+							borderBottomWidth: 1,
+							borderBottomColor: '#f0f0f0',
+						},
+						tabBarActiveTintColor: '#1f2937',
+						tabBarInactiveTintColor: '#6b7280',
+					}}>
+					<Tab.Screen
+						name="Basic Info"
+						component={BasicInfoTab}
+					/>
+					<Tab.Screen
+						name="Physical"
+						component={PhysicalTab}
+					/>
+					<Tab.Screen
+						name="Skills"
+						component={SkillsTab}
+					/>
+					<Tab.Screen
+						name="Education"
+						component={EducationTab}
+					/>
+					<Tab.Screen
+						name="Portfolio"
+						component={PortfolioTab}
+					/>
+				</Tab.Navigator>
+			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
 }
