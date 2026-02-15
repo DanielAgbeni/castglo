@@ -30,7 +30,7 @@ export default function Login() {
 		console.log(data);
 		// Simulate login
 		setAuthenticated(true);
-		router.replace('/(auth)/home');
+		router.replace('/(auth)/dashboard');
 	};
 
 	return (

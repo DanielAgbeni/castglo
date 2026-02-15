@@ -22,7 +22,7 @@ export default function RootLayout() {
 		const inAuthGroup = segments[0] === '(auth)';
 
 		if (isAuthenticated && !inAuthGroup) {
-			router.replace('/(auth)/home');
+			router.replace('/(auth)/dashboard');
 		} else if (!isAuthenticated) {
 			const { hasFinishedOnboarding } = useAppStore.getState();
 			if (!hasFinishedOnboarding && segments[0] !== '(public)') {
