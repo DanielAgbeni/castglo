@@ -60,9 +60,7 @@ export default function Dashboard() {
 			</View>
 
 			{/* Opportunities Section Header */}
-			<TextComponent
-				bold
-				className="text-xl text-black mb-4">
+			<TextComponent className="text-xl font-bold mb-4">
 				Upcoming Opportunities
 			</TextComponent>
 		</View>

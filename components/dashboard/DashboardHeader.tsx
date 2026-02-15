@@ -13,14 +13,10 @@ const DashboardHeader = memo(
 		return (
 			<View className="flex-row items-center justify-between">
 				<View>
-					<TextComponent
-						bold
-						className="text-2xl text-black">
+					<TextComponent className="text-2xl font-bold">
 						Welcome {userName}
 					</TextComponent>
-					<TextComponent
-						medium
-						className="text-gray-600 text-lg">
+					<TextComponent className="text-gray-600 text-lg font-medium">
 						You have {notificationCount} new opportunities
 					</TextComponent>
 				</View>
