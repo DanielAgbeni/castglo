@@ -11,7 +11,9 @@ import {
 	View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from 'react-native-toast-notifications';
 
+import { login } from '../../api/auth';
 import FormInput from '../../components/FormInput';
 import SocialButton from '../../components/SocialButton';
 import { useAppStore } from '../../store';
@@ -19,18 +21,46 @@ import { useAppStore } from '../../store';
 export default function Login() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const setAuthenticated = useAppStore((state) => state.setAuthenticated);
+	const { setAuthenticated, setToken, setUser } = useAppStore();
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
 	} = useForm();
 
-	const onSubmit = (data: any) => {
-		console.log(data);
-		// Simulate login
-		setAuthenticated(true);
-		router.replace('/(auth)/dashboard');
+	const toast = useToast();
+	const onSubmit = async (data: any) => {
+		try {
+			const response = await login(data);
+			if (response.data.success) {
+				const { user, token } = response.data.data;
+				setUser(user);
+				setToken(token);
+				setAuthenticated(true);
+				toast.show('Login Successful', {
+					type: 'success',
+					placement: 'top',
+					duration: 4000,
+					animationType: 'slide-in',
+				});
+				router.replace('/(auth)/(tabs)/dashboard');
+			} else {
+				toast.show(response.data.message || 'Login Failed', {
+					type: 'danger',
+					placement: 'top',
+					duration: 4000,
+					animationType: 'slide-in',
+				});
+			}
+		} catch (error: any) {
+			console.log(error);
+			toast.show(error.response?.data?.message || 'Something went wrong', {
+				type: 'danger',
+				placement: 'top',
+				duration: 4000,
+				animationType: 'slide-in',
+			});
+		}
 	};
 
 	return (
@@ -38,9 +68,14 @@ export default function Login() {
 			<View
 				style={{ paddingTop: insets.top }}
 				className="flex-1">
-				{/* Back Button */}
 				<TouchableOpacity
-					onPress={() => router.back()}
+					onPress={() => {
+						if (router.canGoBack()) {
+							router.back();
+						} else {
+							router.replace('/(public)/onboarding');
+						}
+					}}
 					className="absolute left-4 z-10 p-2 rounded-full bg-white/20"
 					style={{ top: insets.top + 10 }}>
 					<ChevronLeft

@@ -1,11 +1,12 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ToastProvider } from 'react-native-toast-notifications';
 import '../global.css';
 import { useAppStore } from '../store';
 
 export default function RootLayout() {
-	const { isAuthenticated } = useAppStore();
+	const { isAuthenticated, token, user } = useAppStore();
 	const segments = useSegments();
 	const router = useRouter();
 	const [isMounted, setIsMounted] = useState(false);
@@ -20,24 +21,31 @@ export default function RootLayout() {
 		if (!isMounted) return;
 
 		const inAuthGroup = segments[0] === '(auth)';
+		const hasAuth = isAuthenticated && token && user;
 
-		if (isAuthenticated && !inAuthGroup) {
-			router.replace('/(auth)/dashboard');
-		} else if (!isAuthenticated) {
+		if (hasAuth && !inAuthGroup) {
+			router.replace('/(auth)/(tabs)/dashboard');
+		} else if (!hasAuth) {
 			const { hasFinishedOnboarding } = useAppStore.getState();
-			if (!hasFinishedOnboarding && segments[0] !== '(public)') {
+			if (inAuthGroup) {
+				router.replace('/(public)/login');
+			} else if (!hasFinishedOnboarding && segments[0] !== '(public)') {
 				router.replace('/(public)/onboarding');
 			} else if (hasFinishedOnboarding && inAuthGroup) {
 				router.replace('/(public)/welcome');
 			}
 		}
-	}, [isAuthenticated, segments, isMounted]);
+	}, [isAuthenticated, token, user, segments, isMounted]);
 
 	if (!isMounted) return null;
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
-			<Slot screenOptions={{ contentStyle: { backgroundColor: '#AFEEEE' } }} />
+			<ToastProvider>
+				<Slot
+					screenOptions={{ contentStyle: { backgroundColor: '#AFEEEE' } }}
+				/>
+			</ToastProvider>
 		</GestureHandlerRootView>
 	);
 }

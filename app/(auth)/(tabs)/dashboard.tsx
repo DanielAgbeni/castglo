@@ -1,13 +1,12 @@
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import OpportunityCard from '@/components/dashboard/OpportunityCard';
+import StatsCard from '@/components/dashboard/StatsCard';
+import TextComponent from '@/components/TextComponent';
 import { FlashList } from '@shopify/flash-list';
 import { Medal, Zap } from 'lucide-react-native';
 import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import TextComponent from '../../components/TextComponent';
-import DashboardHeader from '../../components/dashboard/DashboardHeader';
-import OpportunityCard from '../../components/dashboard/OpportunityCard';
-import StatsCard from '../../components/dashboard/StatsCard';
 
 // Mock data for opportunities
 const OPPORTUNITIES = [
