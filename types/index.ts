@@ -2,11 +2,15 @@ import { AxiosResponse } from 'axios';
 
 export type ApiRequestResponseType<T> = Promise<AxiosResponse<T>>;
 
+export interface Role {
+	roles: 'talent' | 'casting_director' | 'industry_professional' | 'admin';
+}
+
 export interface User {
 	_id: string;
 	fullName: string;
 	email: string;
-	role: string;
+	role: Role;
 	phoneNumber: string;
 	emailVerified: boolean;
 	emailVerificationExpires: string | null;
