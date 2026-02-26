@@ -1,8 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Check, ChevronLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
+	ActivityIndicator,
 	Image,
 	KeyboardAvoidingView,
 	Platform,
@@ -12,28 +14,102 @@ import {
 	View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from 'react-native-toast-notifications';
+import * as z from 'zod';
 
+import { register } from '../../api/auth';
 import FormInput from '../../components/FormInput';
 import SocialButton from '../../components/SocialButton';
+import { useAppStore } from '../../store';
+
+const signupSchema = z
+	.object({
+		email: z.string().email('Please enter a valid email address'),
+		password: z.string().min(6, 'Password must be at least 6 characters'),
+		confirmPassword: z.string().min(6, 'Please confirm your password'),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: "Passwords don't match",
+		path: ['confirmPassword'],
+	});
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function Signup() {
 	const { role } = useLocalSearchParams<{ role: string }>();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const { setAuthenticated, setToken, setUser } = useAppStore();
+	const [isLoading, setIsLoading] = useState(false);
+	const [agreeToTerms, setAgreeToTerms] = useState(false);
+
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm();
-	const [agreeToTerms, setAgreeToTerms] = useState(false);
+	} = useForm<SignupFormData>({
+		resolver: zodResolver(signupSchema),
+		defaultValues: {
+			email: '',
+			password: '',
+			confirmPassword: '',
+		},
+	});
 
-	const onSubmit = (data: any) => {
+	const toast = useToast();
+
+	const onSubmit = async (data: SignupFormData) => {
 		if (!agreeToTerms) {
-			alert('Please agree to the Terms of Service and Privacy Policy');
+			toast.show('Please agree to the Terms of Service and Privacy Policy', {
+				type: 'warning',
+				placement: 'top',
+				duration: 3000,
+			});
 			return;
 		}
-		console.log(data);
-		// Proceed to next step or API call
+
+		if (isLoading) return;
+		setIsLoading(true);
+
+		try {
+			const registrationData = {
+				...data,
+				role: role || 'Talent', // Default to Talent if not specified
+			};
+
+			const response = await register(registrationData);
+
+			if (response.data.success) {
+				const { user, token } = response.data.data;
+				setUser(user);
+				setToken(token);
+				setAuthenticated(true);
+				toast.show('Account Created Successfully', {
+					type: 'success',
+					placement: 'top',
+					duration: 4000,
+					animationType: 'slide-in',
+				});
+				router.replace('/(auth)/(tabs)/dashboard');
+			} else {
+				toast.show(response.data.message || 'Registration Failed', {
+					type: 'danger',
+					placement: 'top',
+					duration: 4000,
+					animationType: 'slide-in',
+				});
+			}
+		} catch (error: any) {
+			console.log(error);
+			toast.show(error.response?.data?.message || 'Something went wrong', {
+				type: 'danger',
+				placement: 'top',
+				duration: 4000,
+				animationType: 'slide-in',
+			});
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const getRoleTitle = () => {
@@ -130,8 +206,7 @@ export default function Signup() {
 								name="email"
 								label="Email"
 								placeholder="Enter your email"
-								rules={{ required: 'Email is required' }}
-								error={errors.email?.message as string}
+								error={errors.email?.message}
 							/>
 
 							<FormInput
@@ -140,8 +215,7 @@ export default function Signup() {
 								label="Password"
 								placeholder="Create a password"
 								secureTextEntry
-								rules={{ required: 'Password is required' }}
-								error={errors.password?.message as string}
+								error={errors.password?.message}
 							/>
 
 							<FormInput
@@ -150,8 +224,7 @@ export default function Signup() {
 								label="Confirm Password"
 								placeholder="Confirm your password"
 								secureTextEntry
-								rules={{ required: 'Please confirm your password' }}
-								error={errors.confirmPassword?.message as string}
+								error={errors.confirmPassword?.message}
 							/>
 
 							{/* Terms Checkbox */}
@@ -185,10 +258,17 @@ export default function Signup() {
 
 							<TouchableOpacity
 								onPress={handleSubmit(onSubmit)}
-								className="bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20">
-								<Text className="text-white font-bold text-lg">
-									Create Account
-								</Text>
+								disabled={isLoading}
+								className={`bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20 ${
+									isLoading ? 'opacity-70' : ''
+								}`}>
+								{isLoading ? (
+									<ActivityIndicator color="white" />
+								) : (
+									<Text className="text-white font-bold text-lg">
+										Create Account
+									</Text>
+								)}
 							</TouchableOpacity>
 
 							<Text className="text-gray-400 text-center text-xs mt-6 px-10 leading-5">

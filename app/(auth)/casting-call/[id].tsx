@@ -265,7 +265,14 @@ export default function CastingCallDetails() {
 							<TextComponent className="mb-4 text-gray-600">
 								Submit your audition for this role
 							</TextComponent>
-							<TouchableOpacity className="rounded-lg bg-[#5b4be0] py-3 items-center">
+							<TouchableOpacity
+								className="items-center rounded-lg bg-[#5b4be0] py-3"
+								onPress={() =>
+									router.push({
+										pathname: '/(auth)/(tabs)/submit',
+										params: { castingCallId: castingCall.id },
+									})
+								}>
 								<TextComponent className="font-bold text-white">
 									Submit Audition
 								</TextComponent>

@@ -2,6 +2,7 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import OpportunityCard from '@/components/dashboard/OpportunityCard';
 import StatsCard from '@/components/dashboard/StatsCard';
 import TextComponent from '@/components/TextComponent';
+import { useAppStore } from '@/store';
 import { FlashList } from '@shopify/flash-list';
 import { Medal, Zap } from 'lucide-react-native';
 import React, { useCallback } from 'react';
@@ -34,6 +35,7 @@ const OPPORTUNITIES = [
 ];
 
 export default function Dashboard() {
+	const { user } = useAppStore();
 	const handlePress = useCallback((title: string) => {
 		console.log(`Pressed: ${title}`);
 	}, []);
@@ -72,7 +74,7 @@ export default function Dashboard() {
 			<View style={styles.container}>
 				<View className="bg-white px-5 py-4 pb-4">
 					<DashboardHeader
-						userName="Back"
+						userName={user?.fullName}
 						notificationCount={3}
 					/>
 				</View>

@@ -1,7 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
+	ActivityIndicator,
 	Image,
 	KeyboardAvoidingView,
 	Platform,
@@ -12,24 +15,43 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from 'react-native-toast-notifications';
+import * as z from 'zod';
 
 import { login } from '../../api/auth';
 import FormInput from '../../components/FormInput';
 import SocialButton from '../../components/SocialButton';
 import { useAppStore } from '../../store';
 
+const loginSchema = z.object({
+	email: z.string().email('Please enter a valid email address'),
+	password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function Login() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { setAuthenticated, setToken, setUser } = useAppStore();
+	const [isLoading, setIsLoading] = useState(false);
+
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm();
+	} = useForm<LoginFormData>({
+		resolver: zodResolver(loginSchema),
+		defaultValues: {
+			email: '',
+			password: '',
+		},
+	});
 
 	const toast = useToast();
-	const onSubmit = async (data: any) => {
+
+	const onSubmit = async (data: LoginFormData) => {
+		if (isLoading) return;
+		setIsLoading(true);
 		try {
 			const response = await login(data);
 			if (response.data.success) {
@@ -60,6 +82,8 @@ export default function Login() {
 				duration: 4000,
 				animationType: 'slide-in',
 			});
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -68,6 +92,7 @@ export default function Login() {
 			<View
 				style={{ paddingTop: insets.top }}
 				className="flex-1">
+				{/* Back Button */}
 				<TouchableOpacity
 					onPress={() => {
 						if (router.canGoBack()) {
@@ -136,8 +161,7 @@ export default function Login() {
 								name="email"
 								label="Email"
 								placeholder="Enter your email"
-								rules={{ required: 'Email is required' }}
-								error={errors.email?.message as string}
+								error={errors.email?.message}
 							/>
 
 							<View>
@@ -147,8 +171,7 @@ export default function Login() {
 									label="Password"
 									placeholder="Enter your password"
 									secureTextEntry
-									rules={{ required: 'Password is required' }}
-									error={errors.password?.message as string}
+									error={errors.password?.message}
 								/>
 								<TouchableOpacity className="self-end mt-1">
 									<Text className="text-[#5443DB] font-medium text-sm">
@@ -159,8 +182,15 @@ export default function Login() {
 
 							<TouchableOpacity
 								onPress={handleSubmit(onSubmit)}
-								className="bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20">
-								<Text className="text-white font-bold text-lg">Sign In</Text>
+								disabled={isLoading}
+								className={`bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20 ${
+									isLoading ? 'opacity-70' : ''
+								}`}>
+								{isLoading ? (
+									<ActivityIndicator color="white" />
+								) : (
+									<Text className="text-white font-bold text-lg">Sign In</Text>
+								)}
 							</TouchableOpacity>
 
 							<View className="flex-row justify-center mt-6 pb-10">

@@ -3,7 +3,7 @@ import { ApiRequestResponseType } from '../types';
 
 const controller = new AbortController();
 
-const baseURL = 'https://castglo.onrender.com/api/v1';
+const baseURL = 'https://castgl0.onrender.com/api/v1';
 
 const api = axios.create({
 	baseURL,
