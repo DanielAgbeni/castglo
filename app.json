@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.danielagbeni.castglo"
+      "package": "com.danielagbeni.castglo",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "output": "static",

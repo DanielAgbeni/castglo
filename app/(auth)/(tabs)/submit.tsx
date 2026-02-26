@@ -44,7 +44,7 @@ export default function Submit() {
 			<SafeAreaView
 				className="flex-1 bg-[#AFEEEE] justify-center items-center"
 				edges={['top']}>
-				<TextComponent className="text-gray-500">
+				<TextComponent className="text-gray-500 font-bold">
 					No casting call selected.
 				</TextComponent>
 				<TouchableOpacity

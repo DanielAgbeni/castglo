@@ -5,6 +5,7 @@ export default function AuthLayout() {
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="(tabs)" />
 			<Stack.Screen name="casting-call/[id]" />
+			<Stack.Screen name="chat/[id]" />
 		</Stack>
 	);
 }

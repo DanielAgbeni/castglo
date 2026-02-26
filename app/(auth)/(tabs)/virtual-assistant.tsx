@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import TextComponent from '@/components/TextComponent';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function VirtualAssistant() {
@@ -13,7 +14,7 @@ export default function VirtualAssistant() {
 					alignItems: 'center',
 					backgroundColor: '#AFEEEE',
 				}}>
-				<Text>Virtual Assistant</Text>
+				<TextComponent className="font-bold text-xl">Virtual Assistant</TextComponent>
 			</View>
 		</SafeAreaView>
 	);
