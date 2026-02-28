@@ -79,21 +79,23 @@ export default function Messages() {
 
 	return (
 		<SafeAreaView
-			style={{ flex: 1, backgroundColor: '#AFEEEE' }}
+			style={{ flex: 1 }}
 			edges={['top']}>
-			<View className="flex-1 bg-[#AFEEEE]">
+			<View style={{ flex: 1, backgroundColor: '#AFEEEE' }}>
 				{/* Header */}
-				<View className="flex-row justify-between items-center px-5 pt-2 pb-3 bg-[#AFEEEE]">
-					<TextComponent className="text-2xl font-bold text-gray-900">
-						Messages
-					</TextComponent>
-					<TouchableOpacity className="w-10 h-10 rounded-xl bg-white/60 items-center justify-center">
-						<SlidersHorizontal size={20} color="#6B7280" />
-					</TouchableOpacity>
+				<View className="bg-white px-5 py-4 pb-4">
+					<View className="flex-row items-center justify-between">
+						<TextComponent className="text-2xl font-bold">
+							Messages
+						</TextComponent>
+						<TouchableOpacity className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center">
+							<SlidersHorizontal size={20} color="#6B7280" />
+						</TouchableOpacity>
+					</View>
 				</View>
 
 				{/* New Message Button */}
-				<View className="px-5 pb-4">
+				<View className="px-5 py-4">
 					<TouchableOpacity
 						className="flex-row items-center justify-center bg-indigo-500 py-3 px-5 rounded-xl self-start shadow-md"
 						activeOpacity={0.85}>

@@ -1,4 +1,5 @@
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import DirectorDashboard from '@/components/dashboard/DirectorDashboard';
 import OpportunityCard from '@/components/dashboard/OpportunityCard';
 import StatsCard from '@/components/dashboard/StatsCard';
 import TextComponent from '@/components/TextComponent';
@@ -6,43 +7,44 @@ import { useAppStore } from '@/store';
 import { FlashList } from '@shopify/flash-list';
 import { Medal, Zap } from 'lucide-react-native';
 import React, { useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Mock data for opportunities
 const OPPORTUNITIES = [
 	{
 		id: '1',
 		title: 'Lead Role - Indie Drama',
 		daysLeft: 2,
 		image:
-			'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image (forest/drama vibe)
+			'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 	},
 	{
 		id: '2',
 		title: 'Commercial - Fast Food Brand',
 		daysLeft: 5,
 		image:
-			'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image (office/commercial vibe)
+			'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 	},
 	{
 		id: '3',
 		title: 'Music Video - Pop Artist',
 		daysLeft: 3,
 		image:
-			'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image (urban/music vibe)
+			'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 	},
 ];
 
 export default function Dashboard() {
 	const { user } = useAppStore();
+	const activeRole = useAppStore((s) => s.getActiveRole());
+	const isDirector = activeRole === 'casting_director';
+
 	const handlePress = useCallback((title: string) => {
 		console.log(`Pressed: ${title}`);
 	}, []);
 
-	const renderHeader = () => (
+	const renderTalentHeader = () => (
 		<View>
-			{/* Stats Row */}
 			<View className="flex-row justify-between mb-8 gap-x-4">
 				<StatsCard
 					title="Submissions"
@@ -59,8 +61,6 @@ export default function Dashboard() {
 					bgColor="#FFF0FA"
 				/>
 			</View>
-
-			{/* Opportunities Section Header */}
 			<TextComponent className="text-xl font-bold mb-4">
 				Upcoming Opportunities
 			</TextComponent>
@@ -69,42 +69,36 @@ export default function Dashboard() {
 
 	return (
 		<SafeAreaView
-			style={{ flex: 1 }}
+			className="flex-1"
 			edges={['top']}>
-			<View style={styles.container}>
+			<View className="flex-1 bg-[#AFEEEE]">
 				<View className="bg-white px-5 py-4 pb-4">
 					<DashboardHeader
 						userName={user?.fullName}
 						notificationCount={3}
+						subtitle={isDirector ? '(Director)' : undefined}
 					/>
 				</View>
-				<FlashList
-					data={OPPORTUNITIES}
-					renderItem={({ item }) => (
-						<OpportunityCard
-							title={item.title}
-							daysLeft={item.daysLeft}
-							image={item.image}
-							onPress={() => handlePress(item.title)}
-						/>
-					)}
-					ListHeaderComponent={renderHeader}
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={styles.scrollContent}
-				/>
+
+				{isDirector ? (
+					<DirectorDashboard />
+				) : (
+					<FlashList
+						data={OPPORTUNITIES}
+						renderItem={({ item }) => (
+							<OpportunityCard
+								title={item.title}
+								daysLeft={item.daysLeft}
+								image={item.image}
+								onPress={() => handlePress(item.title)}
+							/>
+						)}
+						ListHeaderComponent={renderTalentHeader}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 20 }}
+					/>
+				)}
 			</View>
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: '#AFEEEE', // Specific teal background from request
-	},
-	scrollContent: {
-		paddingHorizontal: 20,
-		paddingBottom: 20,
-		paddingTop: 20,
-	},
-});

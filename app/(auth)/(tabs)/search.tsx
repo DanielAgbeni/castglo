@@ -1,6 +1,6 @@
 import TextComponent from '@/components/TextComponent';
 import CastingCallCard, {
-	CastingCall,
+    CastingCall,
 } from '@/components/search/CastingCallCard';
 import FilterSection from '@/components/search/FilterSection';
 import SearchBar from '@/components/search/SearchBar';
@@ -73,60 +73,62 @@ export default function Search() {
 
 	return (
 		<SafeAreaView
-			className="flex-1 bg-[#AFEEEE]"
+			style={{ flex: 1 }}
 			edges={['top']}>
-			<View className="flex-1 px-4">
+			<View style={{ flex: 1, backgroundColor: '#AFEEEE' }}>
 				{/* Header */}
-				<View className="mb-4 flex-row items-center justify-between pt-2">
-					<TextComponent
-						size="large"
-						className="text-2xl font-bold text-black">
-						Browse Casting Calls
-					</TextComponent>
-					<TouchableOpacity>
-						<Newspaper
-							size={24}
-							color="#374151"
-						/>
-					</TouchableOpacity>
+				<View className="bg-white px-5 py-4 pb-4">
+					<View className="flex-row items-center justify-between">
+						<TextComponent className="text-2xl font-bold">
+							Browse Casting Calls
+						</TextComponent>
+						<TouchableOpacity>
+							<Newspaper
+								size={24}
+								color="#374151"
+							/>
+						</TouchableOpacity>
+					</View>
 				</View>
 
-				{/* Search & Filter Section */}
-				<View className="mb-4">
-					<SearchBar
-						value={searchQuery}
-						onChangeText={setSearchQuery}
-						onFilterPress={() => setIsFilterVisible(!isFilterVisible)}
-					/>
-					<FilterSection
-						visible={isFilterVisible}
-						selectedCategory={selectedCategory}
-						onSelectCategory={setSelectedCategory}
-						location={location}
-						onChangeLocation={setLocation}
+				<View className="flex-1 px-4">
+					{/* Search & Filter Section */}
+					<View className="mb-4 mt-4">
+						<SearchBar
+							value={searchQuery}
+							onChangeText={setSearchQuery}
+							onFilterPress={() => setIsFilterVisible(!isFilterVisible)}
+						/>
+						<FilterSection
+							visible={isFilterVisible}
+							selectedCategory={selectedCategory}
+							onSelectCategory={setSelectedCategory}
+							location={location}
+							onChangeLocation={setLocation}
+						/>
+					</View>
+
+					{/* Casting Calls List */}
+					<FlatList
+						data={filteredCastings}
+						keyExtractor={(item) => item.id}
+						renderItem={({ item }) => (
+							<CastingCallCard
+								item={item}
+								onPress={() => router.push(`/casting-call/${item.id}`)}
+							/>
+						)}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ paddingBottom: 20 }}
+						ListEmptyComponent={() => (
+							<View className="mt-10 items-center justify-center">
+								<TextComponent className="text-gray-500">
+									No casting calls found.
+								</TextComponent>
+							</View>
+						)}
 					/>
 				</View>
-
-				{/* Casting Calls List */}
-				<FlatList
-					data={filteredCastings}
-					keyExtractor={(item) => item.id}
-					renderItem={({ item }) => (
-						<CastingCallCard
-							item={item}
-							onPress={() => router.push(`/casting-call/${item.id}`)}
-						/>
-					)}
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ paddingBottom: 20 }}
-					ListEmptyComponent={() => (
-						<View className="mt-10 items-center justify-center">
-							<TextComponent className="text-gray-500">
-								No casting calls found.
-							</TextComponent>
-						</View>
-					)}
-				/>
 			</View>
 		</SafeAreaView>
 	);

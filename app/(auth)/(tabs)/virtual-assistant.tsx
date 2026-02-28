@@ -14,7 +14,7 @@ export default function VirtualAssistant() {
 	const [isPublic, setIsPublic] = useState(false);
 
 	return (
-		<SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top']}>
+		<SafeAreaView style={{ flex: 1 }} edges={['top']}>
 			{/* Header */}
 			<View className="flex-row items-center justify-between px-4 py-4 bg-white border-b border-gray-100">
 				<View className="flex-1" />

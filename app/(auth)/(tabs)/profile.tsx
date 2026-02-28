@@ -15,11 +15,13 @@ export default function Profile() {
 		<SafeAreaView
 			style={{ flex: 1 }}
 			edges={['top']}>
-			<View className="px-4 py-3 border-b border-gray-200 flex-row justify-between items-center bg-white">
-				<Text className="text-xl font-bold text-gray-900">Profile Setting</Text>
+			<View className="bg-white px-5 py-4 pb-4">
+				<View className="flex-row items-center justify-between">
+					<Text className="text-2xl font-bold">Profile Setting</Text>
+				</View>
 			</View>
 			<KeyboardAvoidingView
-				style={{ flex: 1 }}
+				style={{ flex: 1, backgroundColor: '#AFEEEE' }}
 				behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
 				keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
 				<Tab.Navigator
@@ -28,7 +30,7 @@ export default function Profile() {
 						tabBarLabelStyle: {
 							fontSize: 14,
 							textTransform: 'none',
-							fontWeight: '600',
+							fontWeight: '900',
 							color: '#1f2937',
 						},
 						tabBarItemStyle: {

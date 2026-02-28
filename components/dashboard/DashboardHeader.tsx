@@ -6,10 +6,11 @@ import TextComponent from '../TextComponent';
 interface DashboardHeaderProps {
 	userName?: string;
 	notificationCount?: number;
+	subtitle?: string;
 }
 
 const DashboardHeader = memo(
-	({ userName = 'Back', notificationCount = 3 }: DashboardHeaderProps) => {
+	({ userName = 'Back', notificationCount = 3, subtitle }: DashboardHeaderProps) => {
 		return (
 			<View className="flex-row items-center justify-between">
 				<View>
@@ -17,7 +18,7 @@ const DashboardHeader = memo(
 						Welcome {userName}
 					</TextComponent>
 					<TextComponent className="text-gray-600 text-lg font-medium">
-						You have {notificationCount} new opportunities
+						{subtitle ?? `You have ${notificationCount} new opportunities`}
 					</TextComponent>
 				</View>
 				<TouchableOpacity className="relative p-2 bg-white rounded-lg border border-gray-200">
