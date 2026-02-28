@@ -69,7 +69,7 @@ export default function Dashboard() {
 
 	return (
 		<SafeAreaView
-			style={{ flex: 1, backgroundColor: '#fff' }}
+			style={{ flex: 1 }}
 			edges={['top']}>
 			<View style={styles.container}>
 				<View className="bg-white px-5 py-4 pb-4">

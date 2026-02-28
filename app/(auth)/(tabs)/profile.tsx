@@ -13,11 +13,10 @@ const Tab = createMaterialTopTabNavigator();
 export default function Profile() {
 	return (
 		<SafeAreaView
-			style={{ flex: 1, backgroundColor: 'white' }}
+			style={{ flex: 1 }}
 			edges={['top']}>
 			<View className="px-4 py-3 border-b border-gray-200 flex-row justify-between items-center bg-white">
 				<Text className="text-xl font-bold text-gray-900">Profile Setting</Text>
-				{/* Placeholder for the icon in the top right, if needed later */}
 			</View>
 			<KeyboardAvoidingView
 				style={{ flex: 1 }}
@@ -42,11 +41,15 @@ export default function Profile() {
 							borderRadius: 3,
 						},
 						tabBarStyle: {
-							backgroundColor: 'white',
-							elevation: 0,
-							shadowOpacity: 0,
-							borderBottomWidth: 1,
-							borderBottomColor: '#f0f0f0',
+							
+							elevation: 2,
+							shadowOpacity: 0.1,
+							borderRadius: 16,
+							marginHorizontal: 16,
+							marginVertical: 8,
+							borderWidth: 1,
+							borderColor: '#e5e7eb',
+							overflow: 'hidden',
 						},
 						tabBarActiveTintColor: '#1f2937',
 						tabBarInactiveTintColor: '#6b7280',
