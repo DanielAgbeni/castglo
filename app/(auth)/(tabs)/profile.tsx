@@ -56,26 +56,21 @@ export default function Profile() {
 						tabBarActiveTintColor: '#1f2937',
 						tabBarInactiveTintColor: '#6b7280',
 					}}>
-					<Tab.Screen
-						name="Basic Info"
-						component={BasicInfoTab}
-					/>
-					<Tab.Screen
-						name="Physical"
-						component={PhysicalTab}
-					/>
-					<Tab.Screen
-						name="Skills"
-						component={SkillsTab}
-					/>
-					<Tab.Screen
-						name="Education"
-						component={EducationTab}
-					/>
-					<Tab.Screen
-						name="Portfolio"
-						component={PortfolioTab}
-					/>
+					<Tab.Screen name="Basic Info">
+						{() => <BasicInfoTab />}
+					</Tab.Screen>
+					<Tab.Screen name="Physical">
+						{() => <PhysicalTab />}
+					</Tab.Screen>
+					<Tab.Screen name="Skills">
+						{() => <SkillsTab />}
+					</Tab.Screen>
+					<Tab.Screen name="Education">
+						{() => <EducationTab />}
+					</Tab.Screen>
+					<Tab.Screen name="Portfolio">
+						{() => <PortfolioTab />}
+					</Tab.Screen>
 				</Tab.Navigator>
 			</KeyboardAvoidingView>
 		</SafeAreaView>

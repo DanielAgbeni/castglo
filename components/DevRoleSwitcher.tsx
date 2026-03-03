@@ -10,7 +10,6 @@ const ROLES: { label: string; value: UserRole }[] = [
 	{ label: '🎭 Talent', value: 'talent' },
 	{ label: '🎬 Casting Director', value: 'casting_director' },
 	{ label: '🏢 Industry Pro', value: 'industry_professional' },
-	{ label: '🛡️ Admin', value: 'admin' },
 ];
 
 function DevRoleSwitcher() {
