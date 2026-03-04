@@ -1,5 +1,6 @@
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DirectorDashboard from '@/components/dashboard/DirectorDashboard';
+import IndustryProDashboard from '@/components/dashboard/IndustryProDashboard';
 import OpportunityCard from '@/components/dashboard/OpportunityCard';
 import StatsCard from '@/components/dashboard/StatsCard';
 import TextComponent from '@/components/TextComponent';
@@ -82,6 +83,8 @@ export default function Dashboard() {
 
 				{isDirector ? (
 					<DirectorDashboard />
+				) : activeRole === 'industry_professional' ? (
+					<IndustryProDashboard />
 				) : (
 					<FlashList
 						data={OPPORTUNITIES}

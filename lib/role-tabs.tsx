@@ -1,13 +1,15 @@
 import type { LucideIcon } from 'lucide-react-native';
 import {
-	FileText,
-	LayoutDashboard,
-	MessageSquare,
-	Plus,
-	Search,
-	UserPen,
-	Users,
-	Video
+    Briefcase,
+    CalendarDays,
+    FileText,
+    LayoutDashboard,
+    MessageSquare,
+    Plus,
+    Search,
+    UserPen,
+    Users,
+    Video
 } from 'lucide-react-native';
 import type { UserRole } from '../types';
 
@@ -36,9 +38,11 @@ const CASTING_DIRECTOR_TABS: TabConfig[] = [
 
 const INDUSTRY_PROFESSIONAL_TABS: TabConfig[] = [
 	{ name: 'dashboard', title: 'Dashboard', Icon: LayoutDashboard },
-	{ name: 'search', title: 'Search', Icon: Search },
-	{ name: 'messages', title: 'Messages', Icon: MessageSquare },
 	{ name: 'profile', title: 'Profile', Icon: UserPen },
+	{ name: 'services', title: 'Services', Icon: Briefcase },
+	{ name: 'browse-talents', title: 'Browse Talents', Icon: Search },
+	{ name: 'booking', title: 'Booking', Icon: CalendarDays },
+	{ name: 'messages', title: 'Chat', Icon: MessageSquare },
 ];
 
 const ADMIN_TABS: TabConfig[] = [

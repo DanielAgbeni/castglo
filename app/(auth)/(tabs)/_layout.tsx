@@ -19,6 +19,9 @@ const ALL_SCREEN_NAMES = [
 	'my-projects',
 	'create-casting-call',
 	'submissions',
+	'services',
+	'browse-talents',
+	'booking',
 ];
 
 function RoleTabBar({ state, descriptors, navigation }: any) {
