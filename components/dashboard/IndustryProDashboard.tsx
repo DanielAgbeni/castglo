@@ -1,7 +1,8 @@
 import TextComponent from '@/components/TextComponent';
+import { FlashList } from '@shopify/flash-list';
 import { DollarSign, Star } from 'lucide-react-native';
 import React, { memo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import BookingCard, { Booking } from './BookingCard';
 
 const UPCOMING_BOOKINGS: Booking[] = [
@@ -62,10 +63,10 @@ const RECENT_REQUESTS: Booking[] = [
 ];
 
 const IndustryProDashboard = memo(() => {
-	return (
-		<ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+	const renderHeader = () => (
+		<View className="mb-6">
 			{/* Stats Row */}
-			<View className="flex-row justify-between mb-6 gap-x-4">
+			<View className="flex-row justify-between gap-x-4">
 				<View className="flex-1 bg-[#EEFAFF] p-4 rounded-xl shadow-sm border border-[#D1F2FF]">
 					<View className="mb-2">
 						<DollarSign size={24} color="#0EA5E9" />
@@ -90,27 +91,37 @@ const IndustryProDashboard = memo(() => {
 					</TextComponent>
 				</View>
 			</View>
+		</View>
+	);
 
-			{/* Upcoming Bookings */}
-			<TextComponent className="text-lg font-bold mb-3 text-black">
-				Upcoming Bookings
-			</TextComponent>
-			<View className="mb-2">
-				{UPCOMING_BOOKINGS.map((booking) => (
-					<BookingCard key={booking.id} booking={booking} />
-				))}
-			</View>
-
+	const renderFooter = () => (
+		<View className="mt-4 mb-6">
 			{/* Recent Requests */}
-			<TextComponent className="text-lg font-bold mb-3 mt-4 text-black">
+			<TextComponent className="text-lg font-bold mb-3 text-black">
 				Recent Booking Requests
 			</TextComponent>
-			<View className="mb-6">
+			<View>
 				{RECENT_REQUESTS.map((request) => (
 					<BookingCard key={request.id} booking={request} />
 				))}
 			</View>
-		</ScrollView>
+		</View>
+	);
+
+	return (
+		<View className="flex-1 px-4 pt-4">
+			<TextComponent className="text-lg font-bold mb-3 text-black">
+				Upcoming Bookings
+			</TextComponent>
+			<FlashList
+				data={UPCOMING_BOOKINGS}
+				renderItem={({ item }: { item: Booking }) => <BookingCard booking={item} />}
+				ListHeaderComponent={renderHeader}
+				ListFooterComponent={renderFooter}
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ paddingBottom: 20 }}
+			/>
+		</View>
 	);
 });
 
