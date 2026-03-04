@@ -72,9 +72,18 @@ export default function Signup() {
 		setIsLoading(true);
 
 		try {
+			// Map the UI role strings to backend enum values
+			let backendRole = 'talent'; // Default to talent
+			
+			if (role === 'Casting Director') {
+				backendRole = 'casting_director';
+			} else if (role === 'Industry Professional') {
+				backendRole = 'industry_professional';
+			}
+
 			const registrationData = {
 				...data,
-				role: role || 'Talent', // Default to Talent if not specified
+				role: backendRole,
 			};
 
 			const response = await register(registrationData);

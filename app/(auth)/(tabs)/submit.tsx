@@ -1,7 +1,7 @@
 import ModalLayout from '@/components/ModalLayout';
 import TextComponent from '@/components/TextComponent';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CloudUpload, FileText, Upload } from 'lucide-react-native';
+import { CloudUpload, FileText, Film, Search, Upload } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
 	Image,
@@ -37,16 +37,31 @@ export default function Submit() {
 	if (!castingCallId) {
 		return (
 			<SafeAreaView
-				className="flex-1 bg-[#AFEEEE] justify-center items-center"
+				className="flex-1 bg-[#AFEEEE] justify-center items-center px-6"
 				edges={['top']}>
-				<TextComponent className="text-gray-500 font-bold">
-					No casting call selected.
+				<View className="bg-white/40 p-8 rounded-full mb-8 shadow-sm">
+					<Film
+						size={72}
+						color="#5b4be0"
+					/>
+				</View>
+				<TextComponent className="text-3xl font-extrabold text-[#1f2937] text-center mb-4">
+					No Casting Call
+				</TextComponent>
+				<TextComponent className="text-center text-gray-700 text-base mb-10 px-4 leading-relaxed">
+					You need to select a casting call to submit an audition. Browse available roles and find your next big opportunity!
 				</TextComponent>
 				<TouchableOpacity
-					className="mt-4 bg-[#5b4be0] px-6 py-2 rounded-lg"
-					onPress={() => router.push('/(auth)/(tabs)/search')}>
-					<TextComponent className="text-white font-bold">
-						Browse Casting Calls
+					className="flex-row items-center justify-center bg-[#5b4be0] px-8 py-4 rounded-2xl shadow-md w-full max-w-[300px]"
+					onPress={() => router.push('/(auth)/(tabs)/search')}
+					activeOpacity={0.8}>
+					<Search
+						size={22}
+						color="#FFF"
+						className="mr-3"
+					/>
+					<TextComponent className="text-white font-bold text-lg">
+						Browse Roles
 					</TextComponent>
 				</TouchableOpacity>
 			</SafeAreaView>
