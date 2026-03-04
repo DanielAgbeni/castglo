@@ -1,0 +1,2 @@
+app/(auth)/(tabs)/submissions.tsx(107,7): error TS2322: Type '{ data: SubmissionData[]; renderItem: ({ item }: { item: SubmissionData; }) => Element; estimatedItemSize: number; showsVerticalScrollIndicator: false; contentContainerStyle: { ...; }; }' is not assignable to type 'IntrinsicAttributes & FlashListProps<SubmissionData> & { ref?: Ref<FlashListRef<SubmissionData>> | undefined; }'.
+  Property 'estimatedItemSize' does not exist on type 'IntrinsicAttributes & FlashListProps<SubmissionData> & { ref?: Ref<FlashListRef<SubmissionData>> | undefined; }'.
