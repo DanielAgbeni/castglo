@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from 'lucide-react-native';
 import React, { memo, useState } from 'react';
 import { Control, Controller, RegisterOptions } from 'react-hook-form';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardTypeOptions, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface FormInputProps {
 	control: Control<any>;
@@ -11,6 +11,8 @@ interface FormInputProps {
 	secureTextEntry?: boolean;
 	rules?: RegisterOptions;
 	error?: string;
+	keyboardType?: KeyboardTypeOptions;
+	autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
 const FormInput = memo(
@@ -22,6 +24,8 @@ const FormInput = memo(
 		secureTextEntry = false,
 		rules,
 		error,
+		keyboardType = 'default',
+		autoCapitalize = 'none',
 	}: FormInputProps) => {
 		const [isPasswordVisible, setIsPasswordVisible] =
 			useState(!secureTextEntry);
@@ -47,7 +51,8 @@ const FormInput = memo(
 								onChangeText={onChange}
 								value={value}
 								secureTextEntry={!isPasswordVisible}
-								autoCapitalize="none"
+								keyboardType={keyboardType}
+								autoCapitalize={autoCapitalize}
 							/>
 							{secureTextEntry && (
 								<TouchableOpacity

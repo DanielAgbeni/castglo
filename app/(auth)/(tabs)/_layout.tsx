@@ -1,7 +1,8 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { withLayoutContext } from 'expo-router';
+import { LogOut } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Alert, TouchableOpacity, View } from 'react-native';
 import { ROLE_TABS } from '../../../lib/role-tabs';
 import { useAppStore } from '../../../store';
 
@@ -26,8 +27,16 @@ const ALL_SCREEN_NAMES = [
 
 function RoleTabBar({ state, descriptors, navigation }: any) {
 	const activeRole = useAppStore((s) => s.getActiveRole());
+	const logout = useAppStore((s) => s.logout);
 	const tabs = ROLE_TABS[activeRole];
 	const tabNames = useMemo(() => new Set(tabs.map((t) => t.name)), [tabs]);
+
+	const handleLogout = () => {
+		Alert.alert('Logout', 'Are you sure you want to log out?', [
+			{ text: 'Cancel', style: 'cancel' },
+			{ text: 'Log Out', style: 'destructive', onPress: logout },
+		]);
+	};
 
 	return (
 		<View className="flex-row bg-white border-t border-gray-200 h-[80px] pb-6">
@@ -62,6 +71,12 @@ function RoleTabBar({ state, descriptors, navigation }: any) {
 						</TouchableOpacity>
 					);
 				})}
+			<TouchableOpacity
+				className="items-center justify-center px-4"
+				onPress={handleLogout}
+				activeOpacity={0.7}>
+				<LogOut color="#EF4444" size={22} />
+			</TouchableOpacity>
 		</View>
 	);
 }

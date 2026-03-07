@@ -4,14 +4,14 @@ import { ChevronLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
-	ActivityIndicator,
-	Image,
-	KeyboardAvoidingView,
-	Platform,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	View,
+    ActivityIndicator,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from 'react-native-toast-notifications';
@@ -38,13 +38,14 @@ export default function Login() {
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isValid },
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
 			email: '',
 			password: '',
 		},
+		mode: 'onChange',
 	});
 
 	const toast = useToast();
@@ -182,9 +183,9 @@ export default function Login() {
 
 							<TouchableOpacity
 								onPress={handleSubmit(onSubmit)}
-								disabled={isLoading}
+								disabled={!isValid || isLoading}
 								className={`bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20 ${
-									isLoading ? 'opacity-70' : ''
+									!isValid || isLoading ? 'opacity-50' : ''
 								}`}>
 								{isLoading ? (
 									<ActivityIndicator color="white" />
@@ -193,16 +194,18 @@ export default function Login() {
 								)}
 							</TouchableOpacity>
 
-							<View className="flex-row justify-center mt-6 pb-10">
-								<Text className="text-gray-600 font-medium text-base">
-									Don't have an account?{' '}
-								</Text>
-								<Link href="/(public)/welcome">
-									<Text className="text-[#5443DB] font-bold text-base">
-										Sign up
+							<Link
+								href="/(public)/welcome"
+								asChild>
+								<TouchableOpacity className="mt-4 mb-10 py-3 items-center">
+									<Text className="text-gray-600 font-medium text-lg">
+										Don't have an account?{' '}
+										<Text className="text-[#5443DB] font-bold text-lg">
+											Sign up
+										</Text>
 									</Text>
-								</Link>
-							</View>
+								</TouchableOpacity>
+							</Link>
 						</View>
 					</KeyboardAvoidingView>
 				</ScrollView>

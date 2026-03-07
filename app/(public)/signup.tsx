@@ -24,7 +24,12 @@ import { useAppStore } from '../../store';
 
 const signupSchema = z
 	.object({
+		fullName: z.string().min(2, 'Full name is required'),
 		email: z.string().email('Please enter a valid email address'),
+		phoneNumber: z
+			.string()
+			.min(10, 'Please enter a valid phone number')
+			.regex(/^\+?[0-9]{10,15}$/, 'Invalid phone number format'),
 		password: z.string().min(6, 'Password must be at least 6 characters'),
 		confirmPassword: z.string().min(6, 'Please confirm your password'),
 	})
@@ -46,17 +51,22 @@ export default function Signup() {
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isValid },
 	} = useForm<SignupFormData>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: {
+			fullName: '',
 			email: '',
+			phoneNumber: '',
 			password: '',
 			confirmPassword: '',
 		},
+		mode: 'onChange',
 	});
 
 	const toast = useToast();
+
+	const isSubmitDisabled = !isValid || !agreeToTerms || isLoading;
 
 	const onSubmit = async (data: SignupFormData) => {
 		if (!agreeToTerms) {
@@ -72,17 +82,17 @@ export default function Signup() {
 		setIsLoading(true);
 
 		try {
-			// Map the UI role strings to backend enum values
-			let backendRole = 'talent'; // Default to talent
-			
+			let backendRole = 'talent';
+
 			if (role === 'Casting Director') {
 				backendRole = 'casting_director';
 			} else if (role === 'Industry Professional') {
 				backendRole = 'industry_professional';
 			}
 
+			const { confirmPassword, ...rest } = data;
 			const registrationData = {
-				...data,
+				...rest,
 				role: backendRole,
 			};
 
@@ -212,10 +222,29 @@ export default function Signup() {
 						<View className="gap-y-2">
 							<FormInput
 								control={control}
+								name="fullName"
+								label="Full Name"
+								placeholder="Enter your full name"
+								autoCapitalize="words"
+								error={errors.fullName?.message}
+							/>
+
+							<FormInput
+								control={control}
 								name="email"
 								label="Email"
 								placeholder="Enter your email"
+								keyboardType="email-address"
 								error={errors.email?.message}
+							/>
+
+							<FormInput
+								control={control}
+								name="phoneNumber"
+								label="Phone Number"
+								placeholder="+2349012345678"
+								keyboardType="phone-pad"
+								error={errors.phoneNumber?.message}
 							/>
 
 							<FormInput
@@ -267,9 +296,9 @@ export default function Signup() {
 
 							<TouchableOpacity
 								onPress={handleSubmit(onSubmit)}
-								disabled={isLoading}
+								disabled={isSubmitDisabled}
 								className={`bg-[#5443DB] py-5 rounded-2xl items-center mt-4 shadow-xl shadow-[#5443DB]/20 ${
-									isLoading ? 'opacity-70' : ''
+									isSubmitDisabled ? 'opacity-50' : ''
 								}`}>
 								{isLoading ? (
 									<ActivityIndicator color="white" />
@@ -292,16 +321,18 @@ export default function Signup() {
 								apply.
 							</Text>
 
-							<View className="flex-row justify-center mt-2 pb-10">
-								<Text className="text-gray-600 font-medium text-base">
-									Already have an account?{' '}
-								</Text>
-								<Link href="/(public)/login">
-									<Text className="text-[#5443DB] font-bold text-base">
-										Sign in
+							<Link
+								href="/(public)/login"
+								asChild>
+								<TouchableOpacity className="mt-4 mb-10 py-3 items-center">
+									<Text className="text-gray-600 font-medium text-lg">
+										Already have an account?{' '}
+										<Text className="text-[#5443DB] font-bold text-lg">
+											Sign in
+										</Text>
 									</Text>
-								</Link>
-							</View>
+								</TouchableOpacity>
+							</Link>
 						</View>
 					</KeyboardAvoidingView>
 				</ScrollView>
