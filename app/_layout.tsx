@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ToastProvider } from 'react-native-toast-notifications';
 import '../global.css';
+import { QueryClientProvider } from '../components/providers/QueryClientProvider';
 import { useAppStore } from '../store';
 
 export default function RootLayout() {
@@ -42,9 +43,11 @@ export default function RootLayout() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ToastProvider>
-				<Slot
-					screenOptions={{ contentStyle: { backgroundColor: '#AFEEEE' } }}
-				/>
+				<QueryClientProvider>
+					<Slot
+						screenOptions={{ contentStyle: { backgroundColor: '#AFEEEE' } }}
+					/>
+				</QueryClientProvider>
 			</ToastProvider>
 		</GestureHandlerRootView>
 	);

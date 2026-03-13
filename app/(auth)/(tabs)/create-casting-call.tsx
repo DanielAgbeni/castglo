@@ -1,50 +1,137 @@
 import { FileText, Sparkles } from 'lucide-react-native';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useToast } from 'react-native-toast-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useCreateCastingCall } from '@/api/casting-call';
 import ActionButtons from '@/components/create-casting-call/ActionButtons';
+import CustomDatePicker from '@/components/create-casting-call/CustomDatePicker';
 import CustomTextInput from '@/components/create-casting-call/CustomTextInput';
 import FormToggle from '@/components/create-casting-call/FormToggle';
+import OptionSelectModal from '@/components/modals/OptionSelectModal';
 import PreviewCard from '@/components/create-casting-call/PreviewCard';
 import SectionHeader from '@/components/create-casting-call/SectionHeader';
 import TextComponent from '@/components/TextComponent';
 
+const PROJECT_TYPE_OPTIONS = [
+	{ label: 'Feature Film', value: 'feature_film' },
+	{ label: 'Short Film', value: 'short_film' },
+	{ label: 'Commercial', value: 'commercial' },
+	{ label: 'Music Video', value: 'music_video' },
+	{ label: 'Television', value: 'television' },
+	{ label: 'Theater', value: 'theater' },
+	{ label: 'Web Series', value: 'web_series' },
+	{ label: 'Voice Over', value: 'voice_over' },
+	{ label: 'Other', value: 'other' },
+];
+
+const CURRENCY_OPTIONS = [
+	{ label: 'USD - US Dollar', value: 'USD' },
+	{ label: 'NGN - Nigerian Naira', value: 'NGN' },
+	{ label: 'GBP - British Pound', value: 'GBP' },
+	{ label: 'EUR - Euro', value: 'EUR' },
+];
+
 type CastingCallFormData = {
 	title: string;
 	description: string;
-	requirements: string;
-	genre: string;
-	location: string;
+	projectName: string;
+	projectType: string;
+	roleName: string;
+	budgetAmount: string;
+	budgetCurrency: string;
+	budgetNegotiable: boolean;
+	locationCity: string;
+	locationState: string;
 	deadline: string;
-	enablePublicVoting: boolean;
-	escrowPrize: boolean;
 };
 
 export default function CreateCastingCallScreen() {
-	const { control, handleSubmit, watch, formState: { errors } } = useForm<CastingCallFormData>({
+	const toast = useToast();
+	const { mutate: createCall, isPending } = useCreateCastingCall();
+
+	const { control, handleSubmit, watch, formState: { errors }, reset, setValue } = useForm<CastingCallFormData>({
 		defaultValues: {
 			title: '',
 			description: '',
-			requirements: '',
-			genre: '',
-			location: '',
+			projectName: '',
+			projectType: 'other',
+			roleName: '',
+			budgetAmount: '',
+			budgetCurrency: 'USD',
+			budgetNegotiable: false,
+			locationCity: '',
+			locationState: '',
 			deadline: '',
-			enablePublicVoting: false,
-			escrowPrize: false,
 		}
 	});
 
+	const [isDraftLoading, setIsDraftLoading] = useState(true);
+	const [isProjectTypeModalVisible, setProjectTypeModalVisible] = useState(false);
+	const [isCurrencyModalVisible, setCurrencyModalVisible] = useState(false);
+
 	const formValues = watch();
 
-	const handleCreate = useCallback((data: CastingCallFormData) => {
-		console.log('Create casting call:', data);
-	}, []);
+	useEffect(() => {
+		const loadDraft = async () => {
+			try {
+				const draftString = await AsyncStorage.getItem('@draft_casting_call');
+				if (draftString) {
+					const draftData = JSON.parse(draftString);
+					reset(draftData);
+					toast.show('Draft loaded successfully', { type: 'success' });
+				}
+			} catch (error) {
+				console.error('Failed to load draft:', error);
+			} finally {
+				setIsDraftLoading(false);
+			}
+		};
+		loadDraft();
+	}, [reset, toast]);
 
-	const handleSaveDraft = useCallback(() => {
-		console.log('Save as draft');
-	}, []);
+	const handleCreate = useCallback((data: CastingCallFormData) => {
+		const payload = {
+			title: data.title,
+			description: data.description,
+			projectName: data.projectName,
+			projectType: data.projectType,
+			status: 'open',
+			roles: [{ name: data.roleName }],
+			budget: { 
+				amount: Number(data.budgetAmount) || 0, 
+				currency: data.budgetCurrency, 
+				isNegotiable: data.budgetNegotiable 
+			},
+			location: { city: data.locationCity, state: data.locationState },
+			deadline: new Date(data.deadline).toISOString(),
+			media: []
+		};
+
+		createCall(payload as any, {
+			onSuccess: () => {
+				toast.show('Casting call created successfully', { type: 'success' });
+				reset();
+			},
+			onError: (error) => {
+				toast.show('Failed to create casting call', { type: 'danger' });
+				console.error(error);
+			}
+		});
+	}, [createCall, toast, reset]);
+
+	const handleSaveDraft = useCallback(async () => {
+		try {
+			await AsyncStorage.setItem('@draft_casting_call', JSON.stringify(formValues));
+			toast.show('Draft saved to device', { type: 'success' });
+		} catch (error) {
+			console.error('Failed to save draft:', error);
+			toast.show('Failed to save draft', { type: 'danger' });
+		}
+	}, [formValues, toast]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-[#AFEEEE]" edges={['top']}>
@@ -92,61 +179,118 @@ export default function CreateCastingCallScreen() {
 
 					<CustomTextInput
 						control={control}
-						name="requirements"
-						label="Requirements"
-						placeholder="Specific skills, experience, or attributes required"
-						multiline
+						name="projectName"
+						label="Project Name *"
+						placeholder="e.g., The Silent Witness"
+						rules={{ required: 'Project Name is required' }}
+						error={errors.projectName?.message}
 					/>
 
 					<CustomTextInput
 						control={control}
-						name="genre"
-						label="Genre *"
-						placeholder="Select genre"
-						rules={{ required: 'Genre is required' }}
-						error={errors.genre?.message}
+						name="projectType"
+						label="Project Type *"
+						placeholder="Select project type"
+						rules={{ required: 'Project Type is required' }}
+						error={errors.projectType?.message}
 						isSelect
-						onPressSelect={() => {}} 
+						onPressSelect={() => setProjectTypeModalVisible(true)}
+						value={PROJECT_TYPE_OPTIONS.find(o => o.value === formValues.projectType)?.label || ''}
+					/>
+
+					<View className="h-4" />
+					<SectionHeader 
+						title="Role Details" 
+						subtitle="Who are you looking for?" 
 					/>
 
 					<CustomTextInput
 						control={control}
-						name="location"
-						label="Location *"
-						placeholder="e.g., Los Angeles, CA or Remote"
-						rules={{ required: 'Location is required' }}
-						error={errors.location?.message}
+						name="roleName"
+						label="Role Name *"
+						placeholder="e.g., Voice Over Artist"
+						rules={{ required: 'Role Name is required' }}
+						error={errors.roleName?.message}
 					/>
 
-					<CustomTextInput
+					<View className="h-4" />
+					<SectionHeader 
+						title="Location & Budget" 
+						subtitle="Where and how much?" 
+					/>
+
+					<View className="flex-row gap-x-4">
+						<View className="flex-1">
+							<CustomTextInput
+								control={control}
+								name="locationCity"
+								label="City *"
+								placeholder="e.g., Remote"
+								rules={{ required: 'City is required' }}
+								error={errors.locationCity?.message}
+							/>
+						</View>
+						<View className="flex-1">
+							<CustomTextInput
+								control={control}
+								name="locationState"
+								label="State *"
+								placeholder="e.g., N/A"
+								rules={{ required: 'State is required' }}
+								error={errors.locationState?.message}
+							/>
+						</View>
+					</View>
+
+					<View className="flex-row gap-x-4">
+						<View className="flex-[2]">
+							<CustomTextInput
+								control={control}
+								name="budgetAmount"
+								label="Budget Amount *"
+								placeholder="e.g., 3000"
+								rules={{ required: 'Budget is required' }}
+								error={errors.budgetAmount?.message}
+								keyboardType="numeric"
+							/>
+						</View>
+						<View className="flex-1">
+							<CustomTextInput
+								control={control}
+								name="budgetCurrency"
+								label="Currency *"
+								placeholder="USD"
+								rules={{ required: 'Required' }}
+								error={errors.budgetCurrency?.message}
+								isSelect
+								onPressSelect={() => setCurrencyModalVisible(true)}
+								value={formValues.budgetCurrency}
+							/>
+						</View>
+					</View>
+
+					<FormToggle
+						control={control}
+						name="budgetNegotiable"
+						title="Budget Negotiable"
+						description="Can this budget be negotiated?"
+					/>
+
+					<View className="h-4" />
+					<SectionHeader 
+						title="Timeline" 
+						subtitle="When does it happen?" 
+					/>
+
+					<CustomDatePicker
 						control={control}
 						name="deadline"
 						label="Application Deadline *"
-						placeholder="DD/MM/YY"
-						rules={{ required: 'Deadline is required' }}
+						placeholder="Select Date"
 						error={errors.deadline?.message}
 					/>
 
-					<View className="h-6" />
 
-					<SectionHeader 
-						title="Advanced Options" 
-						subtitle="Configure additional features for your casting call" 
-					/>
-
-					<FormToggle
-						control={control}
-						name="enablePublicVoting"
-						title="Enable Public Voting"
-						description="Allow the public to vote on submissions to help with selection"
-					/>
-
-					<FormToggle
-						control={control}
-						name="escrowPrize"
-						title="Escrow Prize"
-						description="Set up an escrow prize that will be automatically awarded to the selected talent"
-					/>
 
 					<View className="h-6" />
 
@@ -162,7 +306,7 @@ export default function CreateCastingCallScreen() {
 
 					<PreviewCard
 						title={formValues.title}
-						location={formValues.location}
+						location={`${formValues.locationCity || ''}${formValues.locationCity && formValues.locationState ? ', ' : ''}${formValues.locationState || ''}`}
 						deadline={formValues.deadline}
 						description={formValues.description}
 					/>
@@ -170,8 +314,27 @@ export default function CreateCastingCallScreen() {
 					<ActionButtons
 						onCreate={handleSubmit(handleCreate)}
 						onSaveDraft={handleSaveDraft}
+						isPending={isPending}
 					/>
 				</ScrollView>
+
+				<OptionSelectModal
+					isVisible={isProjectTypeModalVisible}
+					onClose={() => setProjectTypeModalVisible(false)}
+					onSelect={(val) => setValue('projectType', val)}
+					options={PROJECT_TYPE_OPTIONS}
+					title="Select Project Type"
+					selectedValue={formValues.projectType}
+				/>
+
+				<OptionSelectModal
+					isVisible={isCurrencyModalVisible}
+					onClose={() => setCurrencyModalVisible(false)}
+					onSelect={(val) => setValue('budgetCurrency', val)}
+					options={CURRENCY_OPTIONS}
+					title="Select Currency"
+					selectedValue={formValues.budgetCurrency}
+				/>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);

@@ -14,6 +14,8 @@ interface CustomTextInputProps {
 	onPressSelect?: () => void;
 	rules?: RegisterOptions;
 	error?: string;
+	keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+	value?: string;
 }
 
 const CustomTextInput = memo(({ 
@@ -25,7 +27,9 @@ const CustomTextInput = memo(({
 	isSelect = false,
 	onPressSelect,
 	rules,
-	error
+	error,
+	keyboardType = 'default',
+	value: valueOverride
 }: CustomTextInputProps) => {
 	return (
 		<View className="mb-5">
@@ -50,11 +54,12 @@ const CustomTextInput = memo(({
 								placeholderTextColor="#9CA3AF"
 								multiline={multiline}
 								textAlignVertical={multiline ? 'top' : 'center'}
-								value={value}
+								value={valueOverride !== undefined ? valueOverride : value}
 								onBlur={onBlur}
 								onChangeText={onChange}
 								editable={!isSelect}
 								pointerEvents={isSelect ? 'none' : 'auto'}
+								keyboardType={keyboardType}
 							/>
 							{isSelect && <ChevronDown size={20} color="#6B7280" />}
 						</TouchableOpacity>

@@ -39,3 +39,92 @@ export interface RegisterResponse {
 		user: User;
 	};
 }
+
+export type ProjectType = 'feature_film' | 'short_film' | 'commercial' | 'music_video' | 'television' | 'theater' | 'web_series' | 'voice_over' | 'other';
+export type CompensationType = 'paid' | 'unpaid' | 'deferred' | 'copy_credit';
+export type Visibility = 'public' | 'private' | 'invite_only';
+export type CastingCallStatus = 'draft' | 'open' | 'closed' | 'cancelled' | 'archived';
+
+export interface Location {
+	city: string;
+	state: string;
+	country?: string;
+	remote?: boolean;
+}
+
+export interface Budget {
+	amount?: number;
+	currency: string;
+	isNegotiable?: boolean;
+}
+
+export interface Role {
+	name?: string;
+	description?: string;
+	ageRange?: {
+		min: number;
+		max: number;
+	};
+	gender?: string;
+	ethnicity?: string[];
+	requiredSkills?: string[];
+	_id?: string;
+}
+
+export interface Requirements {
+	headshot?: boolean;
+	resume?: boolean;
+	demo?: boolean;
+	union?: boolean;
+	notes?: string;
+}
+
+export interface CastingCall {
+	_id: string;
+	title: string;
+	description: string;
+	createdBy: string | User;
+	projectName: string;
+	projectType: ProjectType;
+	budget: Budget;
+	location: Location;
+	roles: Role[];
+	deadline: string;
+	visibility: Visibility;
+	status: CastingCallStatus;
+	media: string[];
+	applicantCount: number;
+	shortlistedCount: number;
+	requirements: Requirements;
+	compensationType: CompensationType;
+	tags: string[];
+	featured: boolean;
+	viewCount: number;
+	createdAt: string;
+	updatedAt: string;
+	__v: number;
+}
+
+export interface CreateCastingCallRequest {
+	title: string;
+	description: string;
+	projectName: string;
+	projectType: string;
+	status?: string;
+	roles?: { name: string }[];
+	budget?: Budget;
+	location: { city: string; state: string; remote?: boolean };
+	deadline: string;
+	media?: string[];
+	// UI fields mapped
+	requirements?: string;
+	genre?: string;
+	enablePublicVoting?: boolean;
+	escrowPrize?: boolean;
+}
+
+export interface CreateCastingCallResponse {
+	success: boolean;
+	message: string;
+	data: CastingCall;
+}
