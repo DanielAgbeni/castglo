@@ -1,286 +1,395 @@
-import TextComponent from '@/components/TextComponent';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-	Calendar,
-	ChevronLeft,
-	DollarSign,
-	MapPin,
-	Users,
-} from 'lucide-react-native';
-import React from 'react';
-import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
+	useCastingCall,
+	useCloseCastingCall,
+	useDeleteCastingCall,
+	useUpdateCastingCall,
+} from '@/api/casting-call';
+import ConfirmActionModal from '@/components/modals/ConfirmActionModal';
+import TextComponent from '@/components/TextComponent';
+import {
+	formatDate,
+	getLocationLabel,
+	PROJECT_TYPE_LABELS,
+} from '@/lib/castingCallUtils';
+import { useAppStore } from '@/store';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Calendar, Eye, MapPin, Users } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function CastingCallDetails() {
-	const router = useRouter();
-	const { id } = useLocalSearchParams();
+const SectionCard = React.memo(
+	({ children }: { children: React.ReactNode }) => (
+		<View className="bg-white rounded-2xl p-4 mb-6 shadow-sm">{children}</View>
+	),
+);
 
-	// Mock Data - In a real app, fetch based on ID
-	const castingCall = {
-		id: '1',
-		title: 'Lead Role - Indie Drama',
-		productionCompany: 'Moonlight Studios',
-		description:
-			"We are seeking a passionate and experienced actor for the lead role in our upcoming indie drama 'Echoes of Tomorrow'. This is a character-driven story about family relationships, loss, and redemption set in contemporary Los Angeles.",
-		requirements: [
-			'Previous film experience required',
-			'Method acting background preferred',
-			'Available for 6-week shoot starting March 1st',
-			'Must be comfortable with emotional scenes',
-			'Los Angeles area resident preferred',
-		],
-		responsibilities: [
-			"Lead character 'Alex' - complex emotional journey",
-			'Work closely with director on character development',
-			'Collaborate with ensemble cast of 8 actors',
-			'Participate in 2 weeks of rehearsals',
-			'Available for promotional activities',
-		],
-		quickInfo: {
-			location: 'New York, NY',
-			deadline: 'Deadline: 1/20/2024',
-			dates: 'March 1 - April 12, 2024',
-			pay: '$50K - $100K',
-			ageRange: 'Age Range: 25-35',
-		},
-		team: {
-			director: 'Sarah Johnson',
-			castingDirector: 'Maria Rodriguez',
-		},
-		imageUrl:
-			'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=2670&auto=format&fit=crop',
+const SectionLabel = React.memo(
+	({ children }: { children: React.ReactNode }) => (
+		<TextComponent className="text-[11px] font-semibold text-gray-500 tracking-wide mb-3">
+			{children}
+		</TextComponent>
+	),
+);
+
+const StatItem = React.memo(
+	({
+		icon,
+		label,
+		value,
+	}: {
+		icon: React.ReactNode;
+		label: string;
+		value: string | number;
+	}) => (
+		<View className="flex-1">
+			<View className="flex-row items-center gap-x-2 mb-1">
+				{icon}
+				<TextComponent className="text-xs text-gray-500">{label}</TextComponent>
+			</View>
+
+			<TextComponent className="text-sm font-semibold text-gray-900">
+				{value}
+			</TextComponent>
+		</View>
+	),
+);
+
+export default function CastingCallDetailScreen() {
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const router = useRouter();
+
+	const isDirector =
+		useAppStore((s) => s.getActiveRole()) === 'casting_director';
+
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedTitle, setEditedTitle] = useState('');
+	const [editedDescription, setEditedDescription] = useState('');
+	const [editedProjectName, setEditedProjectName] = useState('');
+
+	const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
+	const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+
+	const { data, isLoading, isError } = useCastingCall(id);
+	const castingCall = useMemo(() => data?.data, [data]);
+
+	const { mutate: updateCastingCall, isPending: isUpdating } =
+		useUpdateCastingCall();
+
+	const { mutate: closeCastingCall, isPending: isClosing } =
+		useCloseCastingCall();
+
+	const { mutate: deleteCastingCall, isPending: isDeleting } =
+		useDeleteCastingCall();
+
+	const handleStartEdit = () => {
+		if (!castingCall) return;
+
+		setEditedTitle(castingCall.title);
+		setEditedDescription(castingCall.description);
+		setEditedProjectName(castingCall.projectName);
+		setIsEditing(true);
 	};
+
+	const handleSaveEdit = () => {
+		if (!castingCall) return;
+
+		updateCastingCall(
+			{
+				id: castingCall._id,
+				data: {
+					...castingCall,
+					title: editedTitle,
+					description: editedDescription,
+					projectName: editedProjectName,
+				},
+			},
+			{ onSuccess: () => setIsEditing(false) },
+		);
+	};
+
+	if (isLoading || !castingCall) {
+		return (
+			<SafeAreaView
+				className="flex-1 bg-[#9EDDD6]"
+				edges={['top']}>
+				<View className="flex-1 items-center justify-center">
+					<TextComponent>Loading...</TextComponent>
+				</View>
+			</SafeAreaView>
+		);
+	}
+
+	if (isError) {
+		return (
+			<SafeAreaView
+				className="flex-1 bg-[#9EDDD6]"
+				edges={['top']}>
+				<View className="flex-1 items-center justify-center">
+					<TextComponent>Error loading casting call</TextComponent>
+				</View>
+			</SafeAreaView>
+		);
+	}
+
+	const createdBy =
+		typeof castingCall.createdBy !== 'string' ? castingCall.createdBy : null;
+
+	const isOpen = castingCall.status === 'open';
 
 	return (
 		<SafeAreaView
-			className="flex-1 bg-[#AFEEEE]"
+			className="flex-1 bg-[#9EDDD6]"
 			edges={['top']}>
-			<View className="flex-1">
-				{/* Header */}
-				<View className="flex-row items-center border-b border-gray-100 px-4 py-3">
-					<TouchableOpacity
-						onPress={() => router.back()}
-						className="mr-3">
-						<ChevronLeft
-							size={24}
-							color="#000"
-						/>
-					</TouchableOpacity>
-					<TextComponent
-						size="large"
-						className="font-bold flex-1"
-						numberOfLines={1}>
-						{castingCall.title}
-					</TextComponent>
-				</View>
+			{/* Back */}
+			<View className="px-4 pt-3">
+				<TouchableOpacity
+					onPress={() => router.back()}
+					className="h-9 w-9 bg-white/60 rounded-full items-center justify-center">
+					<ArrowLeft
+						size={18}
+						color="#111827"
+					/>
+				</TouchableOpacity>
+			</View>
 
-				<ScrollView
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ paddingBottom: 40 }}>
-					{/* Hero Section */}
-					<View className="relative h-64 w-full">
-						<Image
-							source={{ uri: castingCall.imageUrl }}
-							className="h-full w-full"
-							resizeMode="cover"
-						/>
-						<View className="absolute bottom-0 left-0 right-0 bg-black/60 p-4">
-							<View className="mb-2 self-start rounded bg-[#22c55e] px-2 py-0.5">
-								<TextComponent
-									size="small"
-									className="font-bold text-white">
-									Open
-								</TextComponent>
-							</View>
+			<ScrollView
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{
+					paddingHorizontal: 16,
+					paddingBottom: 120,
+				}}>
+				{/* Header Card */}
+				<View className="bg-white rounded-2xl p-4 mb-6 shadow-sm mt-2">
+					<View className="flex-row items-start justify-between">
+						<View className="flex-1 pr-3">
 							<TextComponent
-								size="large"
-								className="text-2xl font-bold text-white">
-								{castingCall.title}
+								numberOfLines={2}
+								className="text-[18px] font-bold text-gray-900">
+								{isEditing ? editedTitle : castingCall.title}
 							</TextComponent>
-							<TextComponent
-								size="medium"
-								className="text-white">
-								{castingCall.productionCompany}
+
+							<TextComponent className="text-sm text-gray-500 mt-1">
+								{isEditing ? editedProjectName : castingCall.projectName}
+							</TextComponent>
+						</View>
+
+						<View
+							className={`px-3 py-1.5 rounded-full ${
+								isOpen ? 'bg-emerald-500' : 'bg-gray-400'
+							}`}>
+							<TextComponent className="text-white text-[10px] font-bold tracking-wide">
+								{castingCall.status.toUpperCase()}
 							</TextComponent>
 						</View>
 					</View>
+				</View>
 
-					<View className="bg-[#AFEEEE] px-4 pt-4 pb-8">
-						{/* Project Description */}
-						<View className="mb-4 rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-2 font-bold">
-								Project Description
+				{/* Stats */}
+				<SectionCard>
+					<View className="flex-row justify-between mb-4">
+						<StatItem
+							icon={
+								<MapPin
+									size={16}
+									color="#4B5563"
+								/>
+							}
+							label="Location"
+							value={getLocationLabel(castingCall.location)}
+						/>
+
+						<StatItem
+							icon={
+								<Calendar
+									size={16}
+									color="#4B5563"
+								/>
+							}
+							label="Deadline"
+							value={formatDate(castingCall.deadline)}
+						/>
+					</View>
+
+					<View className="flex-row justify-between">
+						<StatItem
+							icon={
+								<Users
+									size={16}
+									color="#4B5563"
+								/>
+							}
+							label="Applicants"
+							value={castingCall.applicantCount}
+						/>
+
+						<StatItem
+							icon={
+								<Eye
+									size={16}
+									color="#4B5563"
+								/>
+							}
+							label="Views"
+							value={castingCall.viewCount}
+						/>
+					</View>
+				</SectionCard>
+
+				{/* Project Details */}
+				<SectionCard>
+					<SectionLabel>Project Details</SectionLabel>
+
+					<View className="flex-row justify-between">
+						<View>
+							<TextComponent className="text-xs text-gray-500">
+								Project Type
 							</TextComponent>
-							<TextComponent className="leading-5 text-gray-700">
-								{castingCall.description}
+
+							<TextComponent className="text-sm font-semibold text-gray-900">
+								{PROJECT_TYPE_LABELS[castingCall.projectType]}
 							</TextComponent>
 						</View>
 
-						{/* Requirements */}
-						<View className="mb-4 rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-2 font-bold">
-								Requirements
+						<View>
+							<TextComponent className="text-xs text-gray-500">
+								Shortlisted
 							</TextComponent>
-							<View className="gap-2">
-								{castingCall.requirements.map((req, index) => (
-									<View
-										key={index}
-										className="flex-row items-start">
-										<View className="mt-1.5 mr-2 h-2 w-2 rounded-full bg-cyan-400" />
-										<TextComponent className="flex-1 text-gray-700">
-											{req}
-										</TextComponent>
-									</View>
-								))}
-							</View>
+
+							<TextComponent className="text-sm font-semibold text-gray-900">
+								{castingCall.shortlistedCount}
+							</TextComponent>
 						</View>
+					</View>
+				</SectionCard>
 
-						{/* Role Responsibilities */}
-						<View className="mb-4 rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-2 font-bold">
-								Role Responsibilities
-							</TextComponent>
-							<View className="gap-2">
-								{castingCall.responsibilities.map((resp, index) => (
-									<View
-										key={index}
-										className="flex-row items-start">
-										<View className="mt-1.5 mr-2 h-2 w-2 rounded-full bg-pink-400" />
-										<TextComponent className="flex-1 text-gray-700">
-											{resp}
-										</TextComponent>
-									</View>
-								))}
-							</View>
-						</View>
+				{/* Description */}
+				<SectionCard>
+					<SectionLabel>Description</SectionLabel>
 
-						{/* Quick Info */}
-						<View className="mb-4 rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-4 font-bold">
-								Quick Info
-							</TextComponent>
-							<View className="gap-4">
-								<View className="flex-row items-start">
-									<MapPin
-										size={20}
-										color="#374151"
-										className="mr-3 mt-0.5"
-									/>
-									<View>
-										<TextComponent className="font-semibold text-gray-700">
-											{castingCall.quickInfo.location}
-										</TextComponent>
-										<TextComponent
-											size="small"
-											className="text-gray-500">
-											{castingCall.quickInfo.deadline}
-										</TextComponent>
-									</View>
-								</View>
+					{isEditing ? (
+						<TextInput
+							value={editedDescription}
+							onChangeText={setEditedDescription}
+							multiline
+							className="text-gray-800 text-[15px]"
+							style={{ minHeight: 120, textAlignVertical: 'top' }}
+						/>
+					) : (
+						<TextComponent className="text-gray-700 text-[15px] leading-7">
+							{castingCall.description}
+						</TextComponent>
+					)}
+				</SectionCard>
 
-								<View className="flex-row items-center">
-									<Calendar
-										size={20}
-										color="#374151"
-										className="mr-3"
-									/>
-									<TextComponent className="text-gray-700">
-										{castingCall.quickInfo.dates}
-									</TextComponent>
-								</View>
+				{/* Director */}
+				{createdBy && (
+					<SectionCard>
+						<SectionLabel>Casting Director</SectionLabel>
 
-								<View className="flex-row items-center">
-									<DollarSign
-										size={20}
-										color="#374151"
-										className="mr-3"
-									/>
-									<TextComponent className="text-gray-700">
-										{castingCall.quickInfo.pay}
-									</TextComponent>
-								</View>
-
-								<View className="flex-row items-center">
-									<Users
-										size={20}
-										color="#374151"
-										className="mr-3"
-									/>
-									<TextComponent className="text-gray-700">
-										{castingCall.quickInfo.ageRange}
-									</TextComponent>
-								</View>
-
-								{/* Badge */}
-								<View className="mt-2 self-start rounded bg-gray-300 px-2 py-1">
-									<TextComponent
-										size="small"
-										className="font-semibold text-gray-700">
-										Drama
-									</TextComponent>
-								</View>
-							</View>
-						</View>
-
-						{/* Casting Team */}
-						<View className="mb-4 rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-2 font-bold">
-								Casting Team
-							</TextComponent>
-							<View className="mb-2">
-								<TextComponent className="font-medium text-gray-900">
-									Director
-								</TextComponent>
-								<TextComponent className="text-gray-600">
-									{castingCall.team.director}
+						<View className="flex-row items-center gap-x-3">
+							<View className="h-12 w-12 rounded-full bg-[#9EDDD6] items-center justify-center">
+								<TextComponent className="text-[#1a7a73] font-bold text-base">
+									{createdBy.fullName?.charAt(0)}
 								</TextComponent>
 							</View>
-							<View>
-								<TextComponent className="font-medium text-gray-900">
-									Casting Director
+
+							<View className="flex-1">
+								<TextComponent className="text-sm font-semibold text-gray-900">
+									{createdBy.fullName}
 								</TextComponent>
-								<TextComponent className="text-gray-600">
-									{castingCall.team.castingDirector}
+
+								<TextComponent className="text-xs text-gray-500 mt-0.5">
+									{createdBy.email}
 								</TextComponent>
 							</View>
 						</View>
+					</SectionCard>
+				)}
+			</ScrollView>
 
-						{/* Ready to Apply */}
-						<View className="rounded-xl bg-[#F0FDFD] p-4 shadow-sm">
-							<TextComponent
-								size="large"
-								className="mb-1 font-bold">
-								Ready to Apply?
-							</TextComponent>
-							<TextComponent className="mb-4 text-gray-600">
-								Submit your audition for this role
-							</TextComponent>
+			{/* Action Bar */}
+			{isDirector && (
+				<View className="px-4 pb-6 pt-3 bg-white border-t border-gray-100">
+					{isEditing ? (
+						<View className="flex-row gap-x-3">
 							<TouchableOpacity
-								className="items-center rounded-lg bg-[#5b4be0] py-3"
-								onPress={() =>
-									router.push({
-										pathname: '/(auth)/(tabs)/submit',
-										params: { castingCallId: castingCall.id },
-									})
-								}>
-								<TextComponent className="font-bold text-white">
-									Submit Audition
+								onPress={() => setIsEditing(false)}
+								className="flex-1 py-3 rounded-xl border border-gray-200 items-center">
+								<TextComponent className="text-gray-600 font-semibold text-sm">
+									Cancel
+								</TextComponent>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								onPress={handleSaveEdit}
+								className="flex-1 py-3 rounded-xl bg-[#1a7a73] items-center">
+								<TextComponent className="text-white font-semibold text-sm">
+									{isUpdating ? 'Saving...' : 'Save Changes'}
 								</TextComponent>
 							</TouchableOpacity>
 						</View>
-					</View>
-				</ScrollView>
-			</View>
+					) : (
+						<>
+							<View className="flex-row gap-x-3 mb-3">
+								<TouchableOpacity
+									onPress={handleStartEdit}
+									className="flex-1 py-3 rounded-xl border border-[#1a7a73] items-center">
+									<TextComponent className="text-[#1a7a73] font-semibold text-sm">
+										Edit
+									</TextComponent>
+								</TouchableOpacity>
+
+								<TouchableOpacity
+									onPress={() => setIsCloseModalVisible(true)}
+									className="flex-1 py-3 rounded-xl bg-amber-400 items-center">
+									<TextComponent className="text-white font-semibold text-sm">
+										Close Call
+									</TextComponent>
+								</TouchableOpacity>
+							</View>
+
+							<TouchableOpacity
+								onPress={() => setIsDeleteModalVisible(true)}
+								className="py-3 rounded-xl border border-red-200 items-center">
+								<TextComponent className="text-red-600 font-semibold text-sm">
+									Delete Casting Call
+								</TextComponent>
+							</TouchableOpacity>
+						</>
+					)}
+				</View>
+			)}
+
+			{/* Modals */}
+			<ConfirmActionModal
+				visible={isCloseModalVisible}
+				title="Close casting call"
+				description="Are you sure you want to close this casting call?"
+				confirmLabel="Close casting call"
+				onConfirm={() => {
+					closeCastingCall(castingCall._id);
+					setIsCloseModalVisible(false);
+				}}
+				onClose={() => setIsCloseModalVisible(false)}
+				isLoading={isClosing}
+			/>
+
+			<ConfirmActionModal
+				visible={isDeleteModalVisible}
+				title="Delete casting call"
+				description="This action cannot be undone."
+				confirmLabel="Delete"
+				variant="danger"
+				onConfirm={() => {
+					deleteCastingCall(castingCall._id, {
+						onSuccess: () => router.back(),
+					});
+					setIsDeleteModalVisible(false);
+				}}
+				onClose={() => setIsDeleteModalVisible(false)}
+				isLoading={isDeleting}
+			/>
 		</SafeAreaView>
 	);
 }

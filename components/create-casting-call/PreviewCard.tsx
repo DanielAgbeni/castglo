@@ -11,6 +11,17 @@ interface PreviewCardProps {
 }
 
 const PreviewCard = memo(({ title, location, deadline, description }: PreviewCardProps) => {
+	const formatDate = (dateString: string) => {
+		if (!dateString) return '';
+		try {
+			const d = new Date(dateString);
+			if (isNaN(d.getTime())) return dateString;
+			return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)}`;
+		} catch {
+			return dateString;
+		}
+	};
+
 	return (
 		<View className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
 			<TextComponent className="text-xl font-bold text-gray-900 mb-3">
@@ -27,7 +38,7 @@ const PreviewCard = memo(({ title, location, deadline, description }: PreviewCar
 				<View className="flex-row items-center">
 					<Calendar size={16} color="#4B5563" />
 					<TextComponent className="text-gray-600 font-normal text-sm ml-2">
-						{deadline || 'Deadline'}
+						{deadline ? formatDate(deadline) : 'Deadline'}
 					</TextComponent>
 				</View>
 			</View>

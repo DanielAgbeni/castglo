@@ -5,6 +5,7 @@ import { ToastProvider } from 'react-native-toast-notifications';
 import '../global.css';
 import { QueryClientProvider } from '../components/providers/QueryClientProvider';
 import { useAppStore } from '../store';
+import { ToastHandler } from '../components/ToastHandler';
 
 export default function RootLayout() {
 	const { isAuthenticated, token, user } = useAppStore();
@@ -43,6 +44,7 @@ export default function RootLayout() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ToastProvider>
+				<ToastHandler />
 				<QueryClientProvider>
 					<Slot
 						screenOptions={{ contentStyle: { backgroundColor: '#AFEEEE' } }}

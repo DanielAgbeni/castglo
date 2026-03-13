@@ -1,82 +1,145 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMyCastingCallsInfinite, useDeleteCastingCall } from '@/api/casting-call';
+import ConfirmActionModal from '@/components/modals/ConfirmActionModal';
+import TextComponent from '@/components/TextComponent';
+import {
+	formatDate,
+	getLocationLabel,
+	PROJECT_TYPE_LABELS,
+} from '@/lib/castingCallUtils';
+import { CastingCall, CastingCallStatus } from '@/types';
+import { useRouter } from 'expo-router';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { FlashList } from '@shopify/flash-list';
-import React, { useCallback, useMemo } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
+import {
+	ActivityIndicator,
+	KeyboardAvoidingView,
+	Platform,
+	TouchableOpacity,
+	View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import EmptyState from '../../../components/projects/EmptyState';
-import ProjectCard, { ProjectData } from '../../../components/projects/ProjectCard';
-import ProjectsHeader from '../../../components/projects/ProjectsHeader';
-import { ProjectStatus } from '../../../components/projects/StatusBadge';
+import { useToast } from 'react-native-toast-notifications';
+import EmptyState from '@/components/projects/EmptyState';
+import ProjectCard, {
+	ProjectData,
+} from '@/components/projects/ProjectCard';
+import ProjectsHeader from '@/components/projects/ProjectsHeader';
+import { ProjectStatus } from '@/components/projects/StatusBadge';
+import PreviewCard from '@/components/create-casting-call/PreviewCard';
 
 const Tab = createMaterialTopTabNavigator();
 
-// Dummy data representing the UI
-const MOCK_PROJECTS: ProjectData[] = [
-	{
-		id: '1',
-		title: 'Lead Role - Indie Drama',
-		status: 'Open',
-		category: 'Drama',
-		description: 'Seeking passionate actor for lead role in upcoming indie drama about family relationships.',
-		submissions: 24,
-		deadline: '1/15/2024',
-		location: 'Los Angeles, CA',
-		tag: 'Public Voting',
-	},
-	{
-		id: '2',
-		title: 'Supporting Actor - Netflix Series',
-		status: 'Closed',
-		category: 'Thriller',
-		description: 'Recurring supporting role in upcoming thriller series.',
-		submissions: 18,
-		deadline: '1/25/2024',
-		location: 'Atlanta, GA',
-		tag: 'Escrow Price',
-	},
-	{
-		id: '3',
-		title: 'Commercial - Tech Brand',
-		status: 'Closed',
-		category: 'Commercial',
-		description: 'Looking for diverse talent for national tech commercial campaign.',
-		submissions: 45,
-		deadline: '1/10/2024',
-		location: 'New York, NY',
-		tag: 'Public Voting',
-	},
-	{
-		id: '4',
-		title: 'Voice Over - Animation',
-		status: 'Draft',
-		category: 'Animation',
-		description: 'Character voice for animated feature film.',
-		submissions: 0,
-		deadline: '1/1/2024',
-		location: 'Remote',
-		tag: 'Public Voting',
-	},
-];
-
 type FilterType = 'All' | ProjectStatus;
 
+const mapStatusToProjectStatus = (
+	status: CastingCallStatus,
+): ProjectStatus => {
+	switch (status) {
+		case 'open':
+			return 'Open';
+		case 'draft':
+			return 'Draft';
+		case 'closed':
+		case 'cancelled':
+		case 'archived':
+		default:
+			return 'Closed';
+	}
+};
+
+const mapCastingCallToProject = (call: CastingCall): ProjectData => ({
+	id: call._id,
+	title: call.title,
+	status: mapStatusToProjectStatus(call.status),
+	category: PROJECT_TYPE_LABELS[call.projectType] ?? 'Project',
+	description: call.description,
+	submissions: call.applicantCount,
+	deadline: formatDate(call.deadline),
+	location: getLocationLabel(call.location),
+	tag: call.featured ? 'Featured' : undefined,
+});
+
 const ProjectListTab = ({ filter }: { filter: FilterType }) => {
+	const router = useRouter();
+	const toast = useToast();
+
+	const {
+		data,
+		isLoading,
+		isError,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+		refetch,
+		isRefetching,
+	} = useMyCastingCallsInfinite();
+
+	const { mutate: deleteCastingCall, isPending: isDeleting } =
+		useDeleteCastingCall();
+
+	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+
+	const castingCalls = useMemo<CastingCall[]>(
+		() => data?.pages.flatMap((page) => page.data.castingCalls) ?? [],
+		[data],
+	);
+
+	const projects = useMemo<ProjectData[]>(
+		() => castingCalls.map(mapCastingCallToProject),
+		[castingCalls],
+	);
+
 	const filteredProjects = useMemo(() => {
-		if (filter === 'All') return MOCK_PROJECTS;
-		return MOCK_PROJECTS.filter((p) => p.status === filter);
-	}, [filter]);
+		if (filter === 'All') return projects;
+		return projects.filter((p) => p.status === filter);
+	}, [filter, projects]);
 
-	const handleView = useCallback((id: string) => {
-		console.log('View project', id);
+	const handleView = useCallback(
+		(id: string) => {
+			router.push(`/casting-call/${id}`);
+		},
+		[router],
+	);
+
+	const handleEdit = handleView;
+
+	const handleDeleteRequest = useCallback((id: string) => {
+		setDeleteId(id);
+		setIsDeleteModalVisible(true);
 	}, []);
 
-	const handleEdit = useCallback((id: string) => {
-		console.log('Edit project', id);
-	}, []);
+	const handleConfirmDelete = useCallback(() => {
+		if (!deleteId) return;
 
-	const handleDelete = useCallback((id: string) => {
-		console.log('Delete project', id);
-	}, []);
+		deleteCastingCall(deleteId, {
+			onSuccess: () => {
+				toast.show('Casting call deleted', { type: 'success' });
+			},
+			onError: () => {
+				toast.show('Failed to delete casting call', { type: 'danger' });
+			},
+		});
+
+		setIsDeleteModalVisible(false);
+		setDeleteId(null);
+	}, [deleteCastingCall, deleteId, toast]);
+
+	const handleEndReached = useCallback(() => {
+		if (isLoading || isFetchingNextPage || !hasNextPage) return;
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetchingNextPage, isLoading]);
+
+	const handleRefresh = useCallback(() => {
+		refetch();
+	}, [refetch]);
 
 	const renderItem = useCallback(
 		({ item }: { item: ProjectData }) => (
@@ -84,20 +147,200 @@ const ProjectListTab = ({ filter }: { filter: FilterType }) => {
 				project={item}
 				onView={handleView}
 				onEdit={handleEdit}
-				onDelete={handleDelete}
+				onDelete={handleDeleteRequest}
 			/>
 		),
-		[handleView, handleEdit, handleDelete]
+		[handleView, handleEdit, handleDeleteRequest],
 	);
+
+	if (isLoading && !data) {
+		return (
+			<View className="flex-1 bg-[#AFEEEE] px-4 pt-4 items-center justify-center">
+				<ActivityIndicator
+					size="small"
+					color="#4B5563"
+				/>
+			</View>
+		);
+	}
 
 	return (
 		<View className="flex-1 bg-[#AFEEEE] px-4 pt-4">
 			<FlashList
 				data={filteredProjects}
 				renderItem={renderItem}
+				keyExtractor={(item) => item.id}
 				showsVerticalScrollIndicator={false}
-				ListEmptyComponent={<EmptyState message={`No projects found for ${filter === 'All' ? 'All Projects' : filter}.`} />}
+				ListEmptyComponent={
+					!isLoading && !isError ? (
+						<EmptyState
+							message={`No projects found for ${
+								filter === 'All' ? 'All Projects' : filter
+							}.`}
+						/>
+					) : null
+				}
+				ListFooterComponent={
+					(isLoading || isFetchingNextPage) && hasNextPage ? (
+						<View className="py-4">
+							<ActivityIndicator
+								size="small"
+								color="#4B5563"
+							/>
+						</View>
+					) : null
+				}
+				onEndReached={handleEndReached}
+				onEndReachedThreshold={0.4}
+				refreshing={isRefetching}
+				onRefresh={handleRefresh}
 				contentContainerStyle={{ paddingBottom: 20 }}
+			/>
+
+			<ConfirmActionModal
+				visible={isDeleteModalVisible}
+				title="Delete casting call"
+				description="This action cannot be undone."
+				confirmLabel="Delete"
+				variant="danger"
+				onConfirm={handleConfirmDelete}
+				onClose={() => {
+					setIsDeleteModalVisible(false);
+					setDeleteId(null);
+				}}
+				isLoading={isDeleting}
+			/>
+		</View>
+	);
+};
+
+type CastingCallFormData = {
+	title: string;
+	description: string;
+	projectName: string;
+	projectType: string;
+	roleName: string;
+	budgetAmount: string;
+	budgetCurrency: string;
+	budgetNegotiable: boolean;
+	locationCity: string;
+	locationState: string;
+	deadline: string;
+};
+
+const DraftsTab = () => {
+	const [draft, setDraft] = useState<CastingCallFormData | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isClearModalVisible, setIsClearModalVisible] = useState(false);
+	const toast = useToast();
+	const router = useRouter();
+
+	useEffect(() => {
+		const loadDraft = async () => {
+			try {
+				const draftString = await AsyncStorage.getItem(
+					'@draft_casting_call',
+				);
+				if (draftString) {
+					const draftData = JSON.parse(draftString);
+					setDraft(draftData);
+				}
+			} catch (error) {
+				console.error('Failed to load draft:', error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadDraft();
+	}, []);
+
+	const handleContinueEditing = useCallback(() => {
+		router.push('/(auth)/(tabs)/create-casting-call');
+	}, [router]);
+
+	const handleConfirmClearDraft = useCallback(() => {
+		const clear = async () => {
+			try {
+				await AsyncStorage.removeItem('@draft_casting_call');
+				setDraft(null);
+				toast.show('Draft removed', { type: 'success' });
+			} catch (error) {
+				console.error('Failed to clear draft:', error);
+				toast.show('Failed to clear draft', { type: 'danger' });
+			} finally {
+				setIsClearModalVisible(false);
+			}
+		};
+
+		clear();
+	}, [toast]);
+
+	if (isLoading) {
+		return (
+			<View className="flex-1 bg-[#AFEEEE] px-4 pt-4 items-center justify-center">
+				<ActivityIndicator
+					size="small"
+					color="#4B5563"
+				/>
+			</View>
+		);
+	}
+
+	if (!draft) {
+		return (
+			<View className="flex-1 bg-[#AFEEEE] px-4 pt-4">
+				<EmptyState message="No drafts saved on this device." />
+			</View>
+		);
+	}
+
+	return (
+		<View className="flex-1 bg-[#AFEEEE] px-4 pt-4">
+			<View className="mb-4">
+				<TextComponent className="text-base font-semibold text-gray-800 mb-1">
+					Saved Draft
+				</TextComponent>
+				<TextComponent className="text-xs text-gray-600">
+					This draft is saved locally on your device.
+				</TextComponent>
+			</View>
+
+			<PreviewCard
+				title={draft.title}
+				location={`${draft.locationCity || ''}${
+					draft.locationCity && draft.locationState ? ', ' : ''
+				}${draft.locationState || ''}`}
+				deadline={draft.deadline}
+				description={draft.description}
+			/>
+
+			<View className="flex-row gap-x-3 mt-6">
+				<TouchableOpacity
+					onPress={handleContinueEditing}
+					className="flex-1 py-3 rounded-xl bg-[#1a7a73] items-center">
+					<TextComponent className="text-white font-semibold text-sm">
+						Continue editing
+					</TextComponent>
+				</TouchableOpacity>
+
+				<TouchableOpacity
+					onPress={() => setIsClearModalVisible(true)}
+					className="flex-1 py-3 rounded-xl border border-red-200 items-center">
+					<TextComponent className="text-red-600 font-semibold text-sm">
+						Discard draft
+					</TextComponent>
+				</TouchableOpacity>
+			</View>
+
+			<ConfirmActionModal
+				visible={isClearModalVisible}
+				title="Discard draft"
+				description="This will permanently remove your saved draft from this device."
+				confirmLabel="Discard draft"
+				variant="danger"
+				onConfirm={handleConfirmClearDraft}
+				onClose={() => setIsClearModalVisible(false)}
 			/>
 		</View>
 	);
@@ -154,7 +397,7 @@ export default function MyProjectsScreen() {
 						{() => <ProjectListTab filter="Closed" />}
 					</Tab.Screen>
 					<Tab.Screen name="Drafts">
-						{() => <ProjectListTab filter="Draft" />}
+						{() => <DraftsTab />}
 					</Tab.Screen>
 				</Tab.Navigator>
 			</KeyboardAvoidingView>

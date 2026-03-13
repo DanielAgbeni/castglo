@@ -1,19 +1,19 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FileText, Sparkles } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useToast } from 'react-native-toast-notifications';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useCreateCastingCall } from '@/api/casting-call';
 import ActionButtons from '@/components/create-casting-call/ActionButtons';
 import CustomDatePicker from '@/components/create-casting-call/CustomDatePicker';
 import CustomTextInput from '@/components/create-casting-call/CustomTextInput';
 import FormToggle from '@/components/create-casting-call/FormToggle';
-import OptionSelectModal from '@/components/modals/OptionSelectModal';
 import PreviewCard from '@/components/create-casting-call/PreviewCard';
 import SectionHeader from '@/components/create-casting-call/SectionHeader';
+import OptionSelectModal from '@/components/modals/OptionSelectModal';
 import TextComponent from '@/components/TextComponent';
 
 const PROJECT_TYPE_OPTIONS = [
@@ -110,8 +110,7 @@ export default function CreateCastingCallScreen() {
 			deadline: new Date(data.deadline).toISOString(),
 			media: []
 		};
-
-		createCall(payload as any, {
+		createCall(payload, {
 			onSuccess: () => {
 				toast.show('Casting call created successfully', { type: 'success' });
 				reset();

@@ -1,48 +1,54 @@
+import { useCastingCallsInfinite } from '@/api/casting-call';
+import PreviewCard from '@/components/create-casting-call/PreviewCard';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DirectorDashboard from '@/components/dashboard/DirectorDashboard';
 import IndustryProDashboard from '@/components/dashboard/IndustryProDashboard';
-import OpportunityCard from '@/components/dashboard/OpportunityCard';
 import StatsCard from '@/components/dashboard/StatsCard';
 import TextComponent from '@/components/TextComponent';
 import { useAppStore } from '@/store';
+import { CastingCall } from '@/types';
 import { FlashList } from '@shopify/flash-list';
 import { Medal, Zap } from 'lucide-react-native';
-import React, { useCallback } from 'react';
-import { View } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getLocationLabel } from '@/lib/castingCallUtils';
 
-const OPPORTUNITIES = [
-	{
-		id: '1',
-		title: 'Lead Role - Indie Drama',
-		daysLeft: 2,
-		image:
-			'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-	},
-	{
-		id: '2',
-		title: 'Commercial - Fast Food Brand',
-		daysLeft: 5,
-		image:
-			'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-	},
-	{
-		id: '3',
-		title: 'Music Video - Pop Artist',
-		daysLeft: 3,
-		image:
-			'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-	},
-];
-
-export default function Dashboard() {
+const Dashboard = () => {
 	const { user } = useAppStore();
 	const activeRole = useAppStore((s) => s.getActiveRole());
 	const isDirector = activeRole === 'casting_director';
 
-	const handlePress = useCallback((title: string) => {
-		console.log(`Pressed: ${title}`);
-	}, []);
+	const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch, isRefetching } =
+		useCastingCallsInfinite();
+
+	const castingCalls = useMemo<CastingCall[]>(
+		() => data?.pages.flatMap((page) => page.data.castingCalls) ?? [],
+		[data],
+	);
+
+	const handleEndReached = useCallback(() => {
+		if (isLoading || isFetchingNextPage || !hasNextPage) return;
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetchingNextPage, isLoading]);
+
+	const handleRefresh = useCallback(() => {
+		refetch();
+	}, [refetch]);
+
+	const renderCastingCall = useCallback(
+		({ item }: { item: CastingCall }) => (
+			<PreviewCard
+				title={item.title}
+				location={getLocationLabel(item.location)}
+				deadline={item.deadline}
+				description={item.description}
+			/>
+		),
+		[],
+	);
+
+	const keyExtractor = useCallback((item: CastingCall) => item._id, []);
 
 	const renderTalentHeader = () => (
 		<View>
@@ -85,23 +91,67 @@ export default function Dashboard() {
 					<DirectorDashboard />
 				) : activeRole === 'industry_professional' ? (
 					<IndustryProDashboard />
+				) : isLoading && !data ? (
+					<View className="flex-1 px-5 pt-5">
+						{/* Stats skeleton */}
+						<View className="flex-row justify-between mb-8 gap-x-4">
+							<View className="flex-1 bg-gray-100 rounded-xl h-24" />
+							<View className="flex-1 bg-gray-100 rounded-xl h-24" />
+						</View>
+
+						{/* Title skeleton */}
+						<View className="h-6 w-52 bg-gray-100 rounded-lg mb-4" />
+
+						{/* Cards skeleton */}
+						{Array.from({ length: 4 }).map((_, index) => (
+							// eslint-disable-next-line react/no-array-index-key
+							<View key={index} className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
+								<View className="h-5 w-40 bg-gray-100 rounded-lg mb-2" />
+								<View className="h-4 w-24 bg-gray-100 rounded-lg mb-3" />
+								<View className="h-32 w-full bg-gray-100 rounded-lg" />
+							</View>
+						))}
+					</View>
 				) : (
 					<FlashList
-						data={OPPORTUNITIES}
-						renderItem={({ item }) => (
-							<OpportunityCard
-								title={item.title}
-								daysLeft={item.daysLeft}
-								image={item.image}
-								onPress={() => handlePress(item.title)}
-							/>
-						)}
+						data={castingCalls}
+						renderItem={renderCastingCall}
+						keyExtractor={keyExtractor}
 						ListHeaderComponent={renderTalentHeader}
 						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 20 }}
+						contentContainerStyle={{
+							paddingHorizontal: 20,
+							paddingBottom: 20,
+							paddingTop: 20,
+						}}
+						onEndReached={handleEndReached}
+						onEndReachedThreshold={0.4}
+						ListEmptyComponent={
+							!isLoading && !isError ? (
+								<View className="py-10 items-center">
+									<TextComponent className="text-gray-500">
+										No casting calls available right now.
+									</TextComponent>
+								</View>
+							) : null
+						}
+						ListFooterComponent={
+							(isLoading || isFetchingNextPage) && hasNextPage ? (
+								<View className="py-4">
+									<ActivityIndicator
+										size="small"
+										color="#4B5563"
+									/>
+								</View>
+							) : null
+						}
+						refreshing={isRefetching}
+						onRefresh={handleRefresh}
 					/>
 				)}
 			</View>
 		</SafeAreaView>
 	);
-}
+};
+
+export default memo(Dashboard);

@@ -116,15 +116,26 @@ export interface CreateCastingCallRequest {
 	location: { city: string; state: string; remote?: boolean };
 	deadline: string;
 	media?: string[];
-	// UI fields mapped
-	requirements?: string;
-	genre?: string;
-	enablePublicVoting?: boolean;
-	escrowPrize?: boolean;
 }
 
 export interface CreateCastingCallResponse {
 	success: boolean;
 	message: string;
 	data: CastingCall;
+}
+
+export interface CastingCallsPagination {
+	page: number;
+	limit: number;
+	total: number;
+	pages: number;
+}
+
+export interface CastingCallsResponse {
+	success: boolean;
+	message: string;
+	data: {
+		castingCalls: CastingCall[];
+		pagination: CastingCallsPagination;
+	};
 }

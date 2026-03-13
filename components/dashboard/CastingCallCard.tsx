@@ -10,6 +10,9 @@ interface CastingCallCardProps {
 	submissions: number;
 	deadline: string;
 	createdDate: string;
+	projectName?: string;
+	location?: string;
+	viewCount?: number;
 	onView?: () => void;
 	onManage?: () => void;
 }
@@ -22,6 +25,9 @@ const CastingCallCard = memo(
 		submissions,
 		deadline,
 		createdDate,
+		projectName,
+		location,
+		viewCount,
 		onView,
 		onManage,
 	}: CastingCallCardProps) => {
@@ -43,27 +49,52 @@ const CastingCallCard = memo(
 					</View>
 				</View>
 
-				<TextComponent className="text-gray-500 text-sm mb-3">
+				<TextComponent className="text-gray-500 text-sm mb-2">
 					{description}
 				</TextComponent>
+
+				{(projectName || location) && (
+					<View className="mb-3">
+						{projectName && (
+							<TextComponent className="text-gray-700 text-sm">
+								Project: {projectName}
+							</TextComponent>
+						)}
+						{location && (
+							<TextComponent className="text-gray-600 text-sm font-normal">
+								Location: {location}
+							</TextComponent>
+						)}
+					</View>
+				)}
 
 				{/* Metadata */}
 				<View className="gap-y-2 mb-4">
 					<View className="flex-row items-center gap-x-2">
-						<Users size={16} color="#6B7280" />
-						<TextComponent className="text-gray-600 text-sm">
+						<Users
+							size={16}
+							color="#6B7280"
+						/>
+						<TextComponent className="text-gray-600 text-sm font-normal">
 							{submissions} submissions
+							{typeof viewCount === 'number' ? ` • ${viewCount} views` : ''}
 						</TextComponent>
 					</View>
 					<View className="flex-row items-center gap-x-2">
-						<Clock size={16} color="#6B7280" />
-						<TextComponent className="text-gray-600 text-sm">
+						<Clock
+							size={16}
+							color="#6B7280"
+						/>
+						<TextComponent className="text-gray-600 text-sm font-normal">
 							Deadline: {deadline}
 						</TextComponent>
 					</View>
 					<View className="flex-row items-center gap-x-2">
-						<Calendar size={16} color="#6B7280" />
-						<TextComponent className="text-gray-600 text-sm">
+						<Calendar
+							size={16}
+							color="#6B7280"
+						/>
+						<TextComponent className="text-gray-600 text-sm font-normal">
 							Created: {createdDate}
 						</TextComponent>
 					</View>

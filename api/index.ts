@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ApiRequestResponseType } from '../types';
+import { useAppStore } from '../store';
+import { DeviceEventEmitter } from 'react-native';
 
 const controller = new AbortController();
 
@@ -10,11 +12,39 @@ const api = axios.create({
 	signal: controller.signal,
 });
 
+// Request interceptor for Bearer token
+api.interceptors.request.use(
+	(config) => {
+		const token = useAppStore.getState().token;
+		if (token && config.headers) {
+			config.headers.Authorization = `Bearer ${token}`;
+		}
+		return config;
+	},
+	(error) => Promise.reject(error)
+);
+
+// Response interceptor for Auth errors
+api.interceptors.response.use(
+	(response) => response,
+	(error) => {
+		if (error.response?.status === 401) {
+			const { logout } = useAppStore.getState();
+			logout();
+			DeviceEventEmitter.emit('show-toast', {
+				message: 'Session expired. Please login again.',
+				type: 'danger',
+			});
+		}
+		return Promise.reject(error);
+	}
+);
+
 export const setHeaderAuthorization: (token?: string) => void = (token) => {
 		if (token) {
 			api.defaults.headers.common.Authorization = `Bearer ${token}`;
 		} else {
-			api.defaults.headers.common.Authorization = undefined;
+			delete api.defaults.headers.common.Authorization;
 		}
 	},
 	postData: <T, D>(
